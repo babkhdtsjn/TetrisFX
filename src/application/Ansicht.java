@@ -1,5 +1,6 @@
 package application;
 import javafx.application.Platform;
+import javafx.scene.image.ImageView;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -14,6 +15,7 @@ import javafx.event.EventHandler;
 //import javafx.event.*;
 //import javafx.scene.robot.*;
 //import javafx.scene.input.*;
+import javafx.scene.image.Image;
 
 
 
@@ -26,8 +28,11 @@ public class Ansicht extends Application{
 	private Scene scene; //= new Scene(root,300,400);
 	
 	private Stage primaryStage; 
-	//private String playfield;
-		
+	
+	//Objekt für eine schönere Bildschirmausgabe
+	private Bildrenderer renderer;
+	
+	
 	// Attribute die die Bewegungsrichtung des currentBlock beeinflussen.
 	static volatile boolean leftDirection = false;
 	static volatile boolean rightDirection = false;
@@ -49,12 +54,16 @@ public class Ansicht extends Application{
 		});
 		*/
 		try {
-			this.root.setPadding(new Insets(20));
-		    this.root.setHgap(25);
-		    this.root.setVgap(15);
+			this.root.setPadding(new Insets(0));
+		    this.root.setHgap(0);
+		    this.root.setVgap(0);
+		    //Debug Test
+		    /*
 		    this.root.add(this.playfieldText, 0,0,2,5);
 		    this.root.add(this.scoreText, 3, 1);
 		    this.root.add(this.nextBlockText, 3, 0);
+		    */
+		    renderer = new Bildrenderer(root);
 			 // Initialisierung des Fensters
 			this.primaryStage = primaryStage;
 			// this.text = new Text();
@@ -63,6 +72,29 @@ public class Ansicht extends Application{
 			this.nextBlockText.setStyle("-fx-font: normal bold 22px 'Courier' ");
 			this.scoreText.setStyle("-fx-font: normal bold 25px 'Courier' "); 
 			 
+			//Bilder
+			// TODO: Folgende Bildertypen:
+			/* Rand
+			 * Ecke
+			 * Verschiedene Farbsteine:
+			 * -Rot
+			 * -Blau
+			 * -Grün
+			 * -Geld
+			 * -Lila
+			 * 
+			 * Alle Steine müssen 30x30 groß sein.
+			 */
+			
+			
+			
+			
+			
+			//TODO: auslagern!
+			Image img = new Image("file:data/Rand.png");
+			ImageView ivTest = new ImageView(img);	//30x30 ist gute größe
+			this.root.add(ivTest, 3, 2);
+			// Bilder ende
 			 
 			 //this.text.setFont("Courier", FontWeight.BOLD, FontPosture.REGULAR, 20);
 			 this.playfieldText.setText("Tetris Start!"); 
