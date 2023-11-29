@@ -39,6 +39,8 @@ public class Spielblock {
 	private int blockDimX;
 	private int blockDimY;
 	
+	private boolean turnPlus;
+	
 	// Position [i][0] = Y Koordinate von Pixel i
 	// Position [i][1] = X Koordinate von Pixel i
 	private int [][] position;
@@ -115,6 +117,8 @@ public class Spielblock {
 		blockDimX = this.blockField[0].length;
 		blockDimY = this.blockField.length;
 		
+		turnPlus = true;
+		
 		// Initialisieren des Feldes für die Positionierung
 		// 4 x-und y-Wert Paare
 		this.position = new int [POSITION_LENGHT_Y][POSITION_LENGHT_X];
@@ -139,6 +143,28 @@ public class Spielblock {
 				}
 			}
 		}
+	}
+	
+	public synchronized String printBlockAsString() {
+		String blockAsString = "";
+		for(int i = 0;i < this.blockField.length ; i++) {
+			System.out.println(" ");
+			for(int j = 0; j < this.blockField[i].length; j++) {
+				if(blockField[i][j] == BLOCK_CHAR) {
+					blockAsString = blockAsString + BLOCK_CHAR;
+				}
+				else {
+					blockAsString = blockAsString + blockField[i][j];
+				}
+			}
+			if((i + 1) == blockField.length) {
+				blockAsString = blockAsString + "";
+			}
+			else {
+				blockAsString = blockAsString + " \n";
+			}
+		}
+		return blockAsString;
 	}
 	
 	public synchronized void setPosition(int row, int column, int value) {
@@ -180,6 +206,14 @@ public class Spielblock {
 	}
 	public synchronized int getPositionAt(int row, int column) {
 		return this.position[row][column];
+	}
+	
+	public synchronized boolean getTurnPlus() {
+		return this.turnPlus;
+	}
+	
+	public synchronized void setTurnPlus(boolean newTurn) {
+		this.turnPlus = newTurn;
 	}
 	
 	//public void setBlockDim() {}

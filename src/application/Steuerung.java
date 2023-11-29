@@ -11,6 +11,8 @@ import javafx.application.Application;
 public class Steuerung {
 	// Informationen über das Spielfeld und den currentBlock als String für die GUI.
 	static String map;
+	// Informationen über den nächsten Block für die GUI
+	static String nextBlockMap;
 	
 	// Legt fest wie lange gewartet wird, bis man schaut, ob der Spieler nocheinmal rotieren möchte.
 	static final int WAIT_ROTATE_TIME = 100;
@@ -66,9 +68,14 @@ public class Steuerung {
 					model.moveCurrentBlock("RIGHT");
 				}
 				else if(Ansicht.getUpDirection() == true) {
-					model.rotateCurrentBlock();
-					System.out.println("---------------Rotating!!!!!!!");
-					Modell.wait(WAIT_ROTATE_TIME);
+					// Die Variable turned in Ansicht soll sicherstellen, dass der Block bei einem Tastenanschlag auch nur einaml gedreht wird.
+					// Die Variable wird auf false zurückgesetzt wenn die Taste losgelassen wird.
+					if(Ansicht.getTurned() == false) {
+						Ansicht.setTurned(true);
+						model.rotateCurrentBlock();
+						System.out.println("---------------Rotating!!!!!!!");
+						Modell.wait(WAIT_ROTATE_TIME);
+					}
 				}
 				
 				if(Ansicht.getDownDirection() == true && Modell.getFallTime() != Modell.FALL_TIME_SPEEDUP) {
@@ -117,18 +124,35 @@ public class Steuerung {
 	
 	public void playLoop() {
 		boolean run = true;
-		int falldistance = 0;
+		//int falldistance = 0;
+		//int debug = 1;
 		while(run) {
 			// Spielblock erschaffen.
-			//model.setCurrentBlock(model.createRandomBlock());
-			
-			//Debug
-			for(int i = 1; i<(model.getPlayfieldColumnLenght()-2); i++) {
-				model.setPlayfieldAt(model.getPlayfieldRowLenght() - 2,i , 'o');
+			if(model.getNextBlock() == null) {
+				model.setCurrentBlock(model.createRandomBlock());
+				model.setNextBlock(model.createRandomBlock());
+				Steuerung.setNextBlockMap(model.getNextBlock().printBlockAsString());
+				//nextBlockMap = model.getNextBlock().printBlockAsString();
 			}
+			else {
+				model.setCurrentBlock(model.getNextBlock());
+				model.setNextBlock(model.createRandomBlock());
+				Steuerung.setNextBlockMap(model.getNextBlock().printBlockAsString());
+				
+			}
+			//Debug
+			/*if(debug == 1) {
+				for(int i = 1; i<(model.getPlayfieldColumnLenght()-2); i++) {
+					model.setPlayfieldAt(model.getPlayfieldRowLenght() - 4,i , 'o');
+					model.setPlayfieldAt(model.getPlayfieldRowLenght() - 3,i , 'o');
+					model.setPlayfieldAt(model.getPlayfieldRowLenght() - 2,i , 'o');
+				}
+				debug = 0;
+			}
+			*/
+			//Debug End
 			
-			
-			model.setCurrentBlock(new Spielblock("line"));
+			//model.setCurrentBlock(new Spielblock("convex"));
 			// TODO: Nächsten Block auch gleich erschaffen.
 			// Spielblock in Bufferzone von Spielfeld legen.
 			model.putBlockInBufferzone();
@@ -138,17 +162,26 @@ public class Steuerung {
 			map = model.playfieldAsString();
 			// Überprüfe ob der Spielblock fallen kann, wenn ja lass ihn fallen
 			
+			
 			while(model.checkNewPosition(model.calculateNewPosition("DOWN")) == true) {
-				if(falldistance == 6) {
+				// Debug start
+				/*if(falldistance == 6 || falldistance == 8 || falldistance == 9 || falldistance == 11) {
 					model.rotateCurrentBlock();
+					model.rotateCurrentBlock();
+					model.rotateCurrentBlock();
+					model.rotateCurrentBlock();
+					
 					System.out.println(""); 
 				}
-				falldistance +=1;
+			*/
+				// Debug End
+				//falldistance +=1;
 				model.moveCurrentBlock("DOWN");
 				model.printPlayfield();
 				map = model.playfieldAsString();
 				Modell.wait(Modell.fallTime);	// Warte eine Sekunde bevor der Block weiter fällt, falls möglich.
 			}
+			//falldistance = 0;
 			//model.printPlayfield();
 			
 			//Übertrage den currentBlock aufs Spielfeld
@@ -173,6 +206,18 @@ public class Steuerung {
 				Modell.wait(2000); // Warte zwei Sekunden bevor der nächste Block fällt.
 			}
 		}
+	}
+	static synchronized String getMap() {
+		return Steuerung.map;
+	}
+	static synchronized void setMap(String newMap) {
+		Steuerung.map = newMap;
+	}
+	static synchronized String getNextBlockMap() {
+		return Steuerung.nextBlockMap;
+	}
+	static synchronized void setNextBlockMap(String newNextBlockMap) {
+		Steuerung.nextBlockMap = newNextBlockMap;
 	}
 }
 

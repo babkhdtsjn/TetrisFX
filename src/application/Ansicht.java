@@ -34,6 +34,10 @@ public class Ansicht extends Application{
 	static volatile boolean downDirection = false;
 	static volatile boolean upDirection = false;
 	
+	// Attribut, damit sichergestellt wird, dass der Block bei einem Tastendruck auch nur einmal gedreht wird.
+	static volatile boolean turned = false;
+	
+	
 	@Override
 	public void start(Stage primaryStage) {
 		/*primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
@@ -62,7 +66,7 @@ public class Ansicht extends Application{
 			 
 			 //this.text.setFont("Courier", FontWeight.BOLD, FontPosture.REGULAR, 20);
 			 this.playfieldText.setText("Tetris Start!"); 
-			 this.nextBlockText.setText("Template!");
+			 this.nextBlockText.setText("Blockvorschau!");
 			 this.scoreText.setText(String.valueOf(Modell.getScore()));
 			 // this.root = new StackPane();  
 			 Scene scene = new Scene(root,800,800);  
@@ -83,6 +87,9 @@ public class Ansicht extends Application{
 		                    	if(Steuerung.map != null) {
 		                    		//System.out.println(Steuerung.map);
 		                    		updateGuiPlayfield();
+		                    	}
+		                    	if(Steuerung.getNextBlockMap() != null && String.valueOf(nextBlockText) != Steuerung.getNextBlockMap()) {
+		                    		updateGuiNextBlock();
 		                    	}
 		                    	updateGuiScore();
 		                    }
@@ -152,7 +159,6 @@ public class Ansicht extends Application{
 		                    		Ansicht.setUpDirection(true);
 		                    		System.out.println("Obere Pfeiltaste gedrückt/Einmal Rotieren!!");
 		                    		Modell.wait(Steuerung.WAIT_ROTATE_TIME);
-		                    		Ansicht.setUpDirection(false);
 		                    	}
 		                    	break;
 		                    	
@@ -182,6 +188,13 @@ public class Ansicht extends Application{
 	                    	if(Ansicht.getDownDirection() == true) {
 	                    		Ansicht.setDownDirection(false);
 	                    		System.out.println("Untere Pfeiltaste losgelassen!!");
+	                    	}
+	                    	break;
+	                    case UP: 
+	                    	if(Ansicht.getUpDirection() == true) {
+	                    		Ansicht.setDownDirection(false);
+	                    		Ansicht.setTurned(false);
+	                    		System.out.println("Obere Pfeiltaste losgelassen!!");
 	                    	}
 	                    	break;
 	                    
@@ -290,12 +303,17 @@ public class Ansicht extends Application{
     */
 	}
 	public void updateGuiPlayfield() {	
-		playfieldText.setText(Steuerung.map);
+		playfieldText.setText(Steuerung.getMap());
 	
 	}
 	public void updateGuiScore() {
 		scoreText.setText(String.valueOf(Modell.score));
 	}
+	
+	public void updateGuiNextBlock() {
+		nextBlockText.setText(Steuerung.getNextBlockMap());
+	}
+	
 	
 	/*public void setPlayfield(String playfield) {
 		this.playfield = playfield;
@@ -316,6 +334,10 @@ public class Ansicht extends Application{
 		return Ansicht.upDirection;
 	}
 	
+	static synchronized boolean getTurned() {
+		return Ansicht.turned;
+	}
+	
 	static synchronized void setLeftDirection(boolean isLeft) {
 		Ansicht.leftDirection = isLeft;
 		/*if(isLeft == true) {
@@ -334,6 +356,10 @@ public class Ansicht extends Application{
 	
 	static synchronized void setUpDirection(boolean isUp) {
 		Ansicht.upDirection = isUp;
+	}
+	
+	static synchronized void setTurned(boolean isTurned) {
+		Ansicht.turned = isTurned;
 	}
 	
 	public Scene getScene() {

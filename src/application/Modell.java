@@ -26,6 +26,7 @@ public class Modell{
 	
 	// Block der gerade gesteuert wird und nach unten fällt.
 	private volatile Spielblock currentBlock = null;
+	private Spielblock nextBlock = null;
 	
 	// Punktzahl des Spielers
 	static int score = 0;
@@ -35,6 +36,10 @@ public class Modell{
 	static final int FALL_TIME_NORMAL = 1000;
 	static final int FALL_TIME_SPEEDUP = 150;
 	static int fallTime = 1000;
+	
+	// Variable, die dafür sorgt, dass die richtige Funktion fürs Drehen aufgerufen wird.
+	// Die Funktion ist davon abhängig wie oft davor der Block schon gedreht worden ist.
+	//boolean turnPlus = true;
 	
 	// Position an der der Block in die Bufferzone gesetzt wird, wenn er spawnt.
 	// Variabel, da der Startplatz von der Dimension des Blockes abhängig ist.
@@ -468,6 +473,8 @@ public class Modell{
 	
 	// Funktion zum Rotieren des currenBlocks (im Uhrzeigersinn)
 	// Alle Blöcke rotieren sich um ihren zweiten Pixel.
+	
+	//TODO: Rotation für ander Blöcke als Line funktioniert noch nicht.
 	public void rotateCurrentBlock() {
 		if(this.currentBlock.getBlockName() != "square") {
 		final int rotatingPixel = 2;
@@ -481,30 +488,48 @@ public class Modell{
 		// Aktualisierte Werte werden erst in newPosition zwischengespeichert und nachdem sie mit checkPosition überprüft wurden,
 		// auf die tatsächliche Positionsvariable und ins Feld geschrieben.
 		int[][] newPosition =  new int[4][2];	
-		for(int i = 0; i < oldPosition.length; i++) {
+		newPosition[1][0] = this.currentBlock.getPositionAt(1, 0);
+		newPosition[1][1] = this.currentBlock.getPositionAt(1, 1);
+		/*for(int i = 0; i < oldPosition.length; i++) {
 			newPosition[i][0] = this.currentBlock.getPositionAt(i, 0) ; 
 			newPosition[i][1] = this.currentBlock.getPositionAt(i, 1) ; 
 		}
-		int distanceToRotatingPixelY = 0;
-		int distanceToRotatingPixelX = 0;
+		*/
+		//int distanceToRotatingPixelY = 0;
+		//int distanceToRotatingPixelX = 0;
+		
+		// TODO : Bestimme den sich rotierenden Pixel anders. 
+		// Im jetzigen Fall ändert sich der Pixel bei jeder Drehung, was dazu führt, dass der Block sich nicht einmal um die komplette Achse drehen kann, sondern nur zwischen 2 Drehpositionen wechselt.
+		//int rotatingPixelYCord = 
+		
+		int rotatingPixelYCord = newPosition[rotatingPixel-1][0];
+		int rotatingPixelXCord = newPosition[rotatingPixel-1][1];
 		
 		
-		int rotatingPixelYCord = oldPosition[rotatingPixel-1][0];
-		int rotatingPixelXCord = oldPosition[rotatingPixel-1][1];
+		//int rotatingPixelYCord = oldPosition[rotatingPixel-1][0];
+		//int rotatingPixelXCord = oldPosition[rotatingPixel-1][1];
 		for(int i = 0; i < oldPosition.length; i++) {
 			if(i != (rotatingPixel-1)) {
 				int yCord = oldPosition[i][0];
 				int xCord = oldPosition[i][1];
 				// Rechne den Unterschied zwischen dem iterierendem Pixel und dem Vergleichspixel.
-				distanceToRotatingPixelY = yCord - rotatingPixelYCord;
-				distanceToRotatingPixelX = xCord - rotatingPixelXCord;
+				int distanceToRotatingPixelY = yCord - rotatingPixelYCord;
+				int distanceToRotatingPixelX = xCord - rotatingPixelXCord;
 				// Spiegele die Koordinaten des iterierendem Pixels am Vergleichspixel.
 				//int newCordY = rotatingPixelYCord - distanceToRotatingPixelY;
 				//int newCordX = rotatingPixelXCord - distanceToRotatingPixelX;
 				
-				int newCordY = rotatingPixelYCord - distanceToRotatingPixelX;
-				int newCordX = rotatingPixelXCord - distanceToRotatingPixelY;
-				
+				int newCordY = 0;
+				int newCordX = 0;
+				if(currentBlock.getTurnPlus() == false) {
+					newCordY = rotatingPixelYCord - distanceToRotatingPixelX;
+					newCordX = rotatingPixelXCord - distanceToRotatingPixelY;
+				}
+				else {
+					newCordY = rotatingPixelYCord + distanceToRotatingPixelX;
+					newCordX = rotatingPixelXCord + distanceToRotatingPixelY;
+					
+				}
 				newPosition[i][0] = newCordY;
 				newPosition[i][1] = newCordX;
 				}
@@ -513,32 +538,33 @@ public class Modell{
 			
 			}
 				
-				// Prüfe ob platz für Rotation ist oder ob nicht gedreht werden kann.
-				// TODO: Prüfung
-				if(this.checkNewPosition(newPosition) == true) {
-					// Lösche alte Werte aus dem Spielfeld.
-					for(int i = 0; i < oldPosition.length; i++) {
-						//playfield[this.currentBlock.getPosition(i_row, 0)][this.currentBlock.getPosition(i_row, 1)] = PLYFLD_FREE_CHAR;
-						
-						this.setPlayfieldCharacterAtPosition(oldPosition[i][0], oldPosition[i][1], PLYFLD_FREE_CHAR);
-						System.out.println("Cleared Field: Y: "+oldPosition[i][0]+", X: "+ oldPosition[i][1]);
-						this.printPlayfield();
-					}
-					System.out.println("-----Cleared Field: ");
-					this.printPlayfield();
-						
-					for(int i = 0; i < newPosition.length; i++) {
-						// Lösche alte Werte aus der Spielkarte.
-						//this.setPlayfieldCharacterAtPosition(oldPosition[i][0], oldPosition[i][1], PLYFLD_FREE_CHAR);
-						// Setze die neuen Were in den currentBlock ein.
-						this.currentBlock.setPosition(i, 0, newPosition[i][0]);
-						this.currentBlock.setPosition(i, 1, newPosition[i][1]);
-						//Setze die neuen Werte in das Spielfeld ein.
-						this.setPlayfieldCharacterAtPosition(newPosition[i][0], newPosition[i][1], Spielblock.BLOCK_CHAR);
-					}
+			// Prüfe ob platz für Rotation ist oder ob nicht gedreht werden kann.
+			// TODO: Prüfung
+			if(this.checkNewPosition(newPosition) == true) {
+				currentBlock.setTurnPlus(!(currentBlock.getTurnPlus())); 
+				// Lösche alte Werte aus dem Spielfeld.
+				for(int i = 0; i < oldPosition.length; i++) {
+					//playfield[this.currentBlock.getPosition(i_row, 0)][this.currentBlock.getPosition(i_row, 1)] = PLYFLD_FREE_CHAR;
 					
-					
+					this.setPlayfieldCharacterAtPosition(oldPosition[i][0], oldPosition[i][1], PLYFLD_FREE_CHAR);
+					//System.out.println("Cleared Field: Y: "+oldPosition[i][0]+", X: "+ oldPosition[i][1]);
+					//this.printPlayfield();
 				}
+				//System.out.println("-----Cleared Field: ");
+				//this.printPlayfield();
+					
+				for(int i = 0; i < newPosition.length; i++) {
+					// Lösche alte Werte aus der Spielkarte.
+					//this.setPlayfieldCharacterAtPosition(oldPosition[i][0], oldPosition[i][1], PLYFLD_FREE_CHAR);
+					// Setze die neuen Were in den currentBlock ein.
+					this.currentBlock.setPosition(i, 0, newPosition[i][0]);
+					this.currentBlock.setPosition(i, 1, newPosition[i][1]);
+					//Setze die neuen Werte in das Spielfeld ein.
+					this.setPlayfieldCharacterAtPosition(newPosition[i][0], newPosition[i][1], Spielblock.BLOCK_CHAR);
+				}
+				System.out.println("Nach Rotation: ");
+				this.printPlayfield();
+			}
 				/*
 				// Lösche alte Werte aus der Spielkarte.
 				this.setPlayfieldCharacterAtPosition(oldPosition[i][0], oldPosition[i][1], PLYFLD_FREE_CHAR);
@@ -582,31 +608,54 @@ public class Modell{
 	public void clearRows(List<Integer> completedRows) {
 		if(completedRows.isEmpty() == false) {
 			// Eine Kopie des Spielfeldes wird genutzt, damit das Ergebnis nicht verfälscht wird.
-			//TODO: Call by Reference zu call by value umändern!
 			char[][] oldPlayfield = new char[this.getPlayfieldRowLenght()][this.getPlayfieldColumnLenght()];
 			for(int i = 0; i < this.getPlayfieldRowLenght(); i ++) {
 				for(int j = 0; j < this.getPlayfieldColumnLenght(); j++) {
 					oldPlayfield[i][j] = this.getPlayfieldAt(i, j);
 				}
 			}
-				
-			
-			
 			//char[][] oldPlayfield = this.playfield;
 			Collections.reverse(completedRows);
+			
+			//Wichtige Variable, die die Reihennummer anpasst, wenn mehrere Reihen gleichzeitig gecleared werden.
+			//Da alle anderen Reihen nacheinander abgearbeitet werden, muss der Reihenindex um eins erhöht werden, wenn sich die Werte aller Reihen in Folge eines Cleares um eins nach unten verschieben.
+			int runs = 0;
 			for(int element : completedRows) {
+				element = element + runs;
 				// Durchlaufe die einzelnen Spalten der fertigen Reihe und setzte ihren Wert auf frei.
 				// Angefangen wir dabei von den oberen fertigen Reihen.
 				
 				for(int j = 1; j < (playfield[0].length) - 1; j++){
 					//this.playfield[element][j] = Modell.PLYFLD_FREE_CHAR;
 					this.setPlayfieldAt(element, j, Modell.PLYFLD_FREE_CHAR);
-					this.printPlayfield();
+					
 				}
+				this.printPlayfield();
 				Modell.setScore(Modell.score + Modell.SCORE_BONUS_CLEARED_ROW);
 				// Setzte alle Werte der darüberliegenden Reihen eins nach unten.
 				//TODO: Hier sitz der Wurm!!
-				/*for(int i = element+1; i < playfield.length; i++) {
+				// i > 3; da die Reihen 0-3 nur zum setzen des Blockes ins Spielfeld gehören.
+				for(int i = 4; i < element+1; i++) {
+					for(int j = 0; j < oldPlayfield[0].length; j++) {					
+						this.setPlayfieldAt(i, j, oldPlayfield[i-1][j]);
+					}
+					
+				}
+				// Aktualisiere oldPlayfield auf den jetzigen Stand, damit nachfolgende zu bereinigende Reihe auch korrekt abgearbeitet werden.
+				for(int i = 0; i < this.getPlayfieldRowLenght(); i ++) {
+					for(int j = 0; j < this.getPlayfieldColumnLenght(); j++) {
+						oldPlayfield[i][j] = this.getPlayfieldAt(i, j);
+					}
+				}
+				
+				System.out.println("");
+				runs++;
+				
+				
+				
+				
+				
+				/*for(int i = element+1; i < playfield.length; i--) {
 					for(int j = 0; j < playfield[i].length; j++) {
 						playfield[i][j] = oldPlayfield[i-1][j];
 						//playfield[i][j] = Modell.PLYFLD_FREE_CHAR;
@@ -645,6 +694,14 @@ public class Modell{
 	}
 	public synchronized void setCurrentBlock(Spielblock newCurrentBlock) {
 		this.currentBlock = newCurrentBlock;
+	}
+	
+	public synchronized Spielblock getNextBlock() {
+		return this.nextBlock;
+	}
+	
+	public synchronized void setNextBlock(Spielblock newNextBlock) {
+		this.nextBlock = newNextBlock;
 	}
 	
 	static synchronized int getScore() {
