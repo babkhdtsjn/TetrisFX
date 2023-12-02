@@ -17,12 +17,10 @@ import javafx.event.EventHandler;
 //import javafx.scene.input.*;
 
 
-
-
 public class Ansicht extends Application{
-	private Text playfieldText = new Text();
-	private Text scoreText = new Text();
-	private Text nextBlockText = new Text();
+	//private Text playfieldText = new Text();
+	//private Text scoreText = new Text();
+	//private Text nextBlockText = new Text();
 	private GridPane root = new GridPane();
     
 	private Scene scene; //= new Scene(root,300,400);
@@ -70,9 +68,9 @@ public class Ansicht extends Application{
 			this.primaryStage = primaryStage;
 			// this.text = new Text();
 			 // this.text.setFont(Font.font("Courier"));
-			this.playfieldText.setStyle("-fx-font: normal bold 22px 'Courier' "); 
-			this.nextBlockText.setStyle("-fx-font: normal bold 22px 'Courier' ");
-			this.scoreText.setStyle("-fx-font: normal bold 25px 'Courier' "); 
+			//this.playfieldText.setStyle("-fx-font: normal bold 22px 'Courier' "); 
+			//this.nextBlockText.setStyle("-fx-font: normal bold 22px 'Courier' ");
+			//this.scoreText.setStyle("-fx-font: normal bold 25px 'Courier' "); 
 			 
 			//Bilder
 			// TODO: Folgende Bildertypen:
@@ -95,11 +93,11 @@ public class Ansicht extends Application{
 			//TODO: auslagern!
 			 
 			 //this.text.setFont("Courier", FontWeight.BOLD, FontPosture.REGULAR, 20);
-			 this.playfieldText.setText("Tetris Start!"); 
-			 this.nextBlockText.setText("Blockvorschau!");
-			 this.scoreText.setText(String.valueOf(Modell.getScore()));
+			 //this.playfieldText.setText("Tetris Start!"); 
+			 //this.nextBlockText.setText("Blockvorschau!");
+			 //this.scoreText.setText(String.valueOf(Modell.getScore()));
 			 // this.root = new StackPane();  
-			 Scene scene = new Scene(root,800,800);  
+			 Scene scene = new Scene(root,530,700);  
 			 //this.root.getChildren().add(playfieldText);  
 			 this.primaryStage.setScene(scene);  
 			 this.primaryStage.setTitle("Tetris");  
@@ -116,17 +114,19 @@ public class Ansicht extends Application{
 		                    public void run() {
 		                    	if(Steuerung.map != null) {
 		                    		//System.out.println(Steuerung.map);
-		                    		updateGuiPlayfield();
+		                    		//updateGuiPlayfield();
 		                    	}
 		                    	Steuerung tempControll = controll;
 		                    	if(tempControll != null) {
 		                    		//System.out.println("-----------------UPDATING PLAYFIELD!");
 		                    		renderer.updatePlayfieldView(tempControll.model.getWholePlayfield());
+		                    		renderer.updateNextBlockView(tempControll.model.getNextBlock());
 		                    	}
 		                    	
-		                    	if(Steuerung.getNextBlockMap() != null && String.valueOf(nextBlockText) != Steuerung.getNextBlockMap()) {
-		                    		updateGuiNextBlock();
-		                    	}
+		                    	//if(Steuerung.getNextBlockMap() != null && String.valueOf(nextBlockText) != Steuerung.getNextBlockMap()) {
+		                    	
+		                    	//updateGuiNextBlock();
+		                    	//}
 		                    	updateGuiScore();
 		                    }
 		                };
@@ -332,18 +332,22 @@ public class Ansicht extends Application{
     );
     */
 	}
-	public void updateGuiPlayfield() {	
+	/*public void updateGuiPlayfield() {	
 		playfieldText.setText(Steuerung.getMap());
 		
 	
 	}
+	*/
 	public void updateGuiScore() {
-		scoreText.setText(String.valueOf(Modell.score));
+		this.renderer.setScoreText(String.valueOf(this.controll.model.getScore()));
+		//scoreText.setText(String.valueOf(Modell.score));
 	}
 	
+	/*
 	public void updateGuiNextBlock() {
 		nextBlockText.setText(Steuerung.getNextBlockMap());
 	}
+	*/
 	
 	
 	/*public void setPlayfield(String playfield) {

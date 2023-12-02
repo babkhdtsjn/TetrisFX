@@ -29,7 +29,7 @@ public class Modell{
 	private Spielblock nextBlock = null;
 	
 	// Punktzahl des Spielers
-	static int score = 0;
+	int score = 0;
 	static final  int SCORE_BONUS_CLEARED_ROW = 10;
 	
 	// ms die ein Block braucht um zu fallen.
@@ -669,7 +669,7 @@ public class Modell{
 					
 				}
 				this.printPlayfield();
-				Modell.setScore(Modell.score + Modell.SCORE_BONUS_CLEARED_ROW);
+				this.setScore(this.score + Modell.SCORE_BONUS_CLEARED_ROW);
 				// Setzte alle Werte der darüberliegenden Reihen eins nach unten.
 				//TODO: Hier sitz der Wurm!!
 				// i > 3; da die Reihen 0-3 nur zum setzen des Blockes ins Spielfeld gehören.
@@ -746,12 +746,12 @@ public class Modell{
 		this.nextBlock = newNextBlock;
 	}
 	
-	static synchronized int getScore() {
-		return Modell.score;
+	public synchronized int getScore() {
+		return this.score;
 	}
 	
-	static synchronized void setScore(int newScore) {
-		Modell.score = newScore;
+	public synchronized void setScore(int newScore) {
+		this.score = newScore;
 	}
 	
 	static synchronized int getFallTime() {
