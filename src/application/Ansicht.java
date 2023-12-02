@@ -1,6 +1,6 @@
 package application;
 import javafx.application.Platform;
-import javafx.scene.image.ImageView;
+
 
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -15,7 +15,7 @@ import javafx.event.EventHandler;
 //import javafx.event.*;
 //import javafx.scene.robot.*;
 //import javafx.scene.input.*;
-import javafx.scene.image.Image;
+
 
 
 
@@ -28,6 +28,8 @@ public class Ansicht extends Application{
 	private Scene scene; //= new Scene(root,300,400);
 	
 	private Stage primaryStage; 
+	
+	static volatile Steuerung controll;
 	
 	//Objekt für eine schönere Bildschirmausgabe
 	private Bildrenderer renderer;
@@ -58,11 +60,11 @@ public class Ansicht extends Application{
 		    this.root.setHgap(0);
 		    this.root.setVgap(0);
 		    //Debug Test
-		    /*
-		    this.root.add(this.playfieldText, 0,0,2,5);
-		    this.root.add(this.scoreText, 3, 1);
-		    this.root.add(this.nextBlockText, 3, 0);
-		    */
+		    
+		    //this.root.add(this.playfieldText, 0,0,2,5);
+		    //this.root.add(this.scoreText, 3, 1);
+		    //this.root.add(this.nextBlockText, 3, 0);
+		    
 		    renderer = new Bildrenderer(root);
 			 // Initialisierung des Fensters
 			this.primaryStage = primaryStage;
@@ -91,10 +93,6 @@ public class Ansicht extends Application{
 			
 			
 			//TODO: auslagern!
-			Image img = new Image("file:data/Rand.png");
-			ImageView ivTest = new ImageView(img);	//30x30 ist gute größe
-			this.root.add(ivTest, 3, 2);
-			// Bilder ende
 			 
 			 //this.text.setFont("Courier", FontWeight.BOLD, FontPosture.REGULAR, 20);
 			 this.playfieldText.setText("Tetris Start!"); 
@@ -120,6 +118,12 @@ public class Ansicht extends Application{
 		                    		//System.out.println(Steuerung.map);
 		                    		updateGuiPlayfield();
 		                    	}
+		                    	Steuerung tempControll = controll;
+		                    	if(tempControll != null) {
+		                    		//System.out.println("-----------------UPDATING PLAYFIELD!");
+		                    		renderer.updatePlayfieldView(tempControll.model.getWholePlayfield());
+		                    	}
+		                    	
 		                    	if(Steuerung.getNextBlockMap() != null && String.valueOf(nextBlockText) != Steuerung.getNextBlockMap()) {
 		                    		updateGuiNextBlock();
 		                    	}
@@ -300,19 +304,13 @@ public class Ansicht extends Application{
 		}
 	}
 	
+	public Ansicht() {}
 	
-	public Ansicht() {
-		/*this.text = new Text();
-		this.root = new StackPane();
-		this.scene = new Scene(root,300,400);
-		*/
-		
-		//
-		//root.getChildren().add(text);
-		
-		
-		
+	/*
+	public Ansicht(Steuerung controll) {
+		this.controll = controll;
 	}
+	*/
 	
 	public void createAndShowGui(Stage primaryStage) {
 		// text.setText(playfield);
@@ -336,6 +334,7 @@ public class Ansicht extends Application{
 	}
 	public void updateGuiPlayfield() {	
 		playfieldText.setText(Steuerung.getMap());
+		
 	
 	}
 	public void updateGuiScore() {
@@ -398,6 +397,14 @@ public class Ansicht extends Application{
 		return this.scene;
 	}
 	
+	public void setControll(Steuerung newControll) {
+		Ansicht.controll = newControll;
+	}
+	
+	
+	public Steuerung getController() {
+		return Ansicht.controll;
+	}	
 	
 	public void wait(int ms)
 	{

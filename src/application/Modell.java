@@ -17,7 +17,7 @@ public class Modell{
 	// Variablen für die Graphische Ausgabe auf der GUI
 	static final char RNDR_SIDE_BORDER_CHAR = PLYFLD_SIDE_BORDER_CHAR;
 	static final char RNDR_BOTTOM_BORDER_CHAR = PLYFLD_BOTTOM_BORDER_CHAR;
-	static final char RNDR_FREE_CHAR = '_';
+	static final char RNDR_FREE_CHAR = ' ';
 	
 	// Größe des Spielfeldes + Platz für die Berandung.
 	private char[][] playfield;
@@ -250,13 +250,45 @@ public class Modell{
 		// Zählervariable zum Tracking der Position von currentBlock. 
 		// Zählt bis 3 hoch, um alle 4 Positionen des Blockes im Feld currentBlock.position festzuhalten.
 		int positionCounter = 0;
+		char blockColor = this.currentBlock.getBlockChar();
+		// Bestimme die Farbe des currentBlocks
+		/*
+		switch(this.currentBlock.getColor()){
+		case "Red":
+			blockColor = 'r';
+			break;
+		case "Blue":
+			blockColor = 'b';
+			break;
+		case "Yellow":
+			blockColor = 'b';
+			break;
+		case "Purple":
+			blockColor = 'p';
+			break;
+		case "Green":
+			blockColor = 'g';
+			break;
+		case "Lightblue":
+			blockColor = 'h';
+			break;
+		default:
+			blockColor = 'c';
+			System.out.println("Fehler beim bestimmen der Farbe eines Blockes im Modell");
+			break;
+	}	
+	*/
+		
+		
+		
+		
 		// Schreibe den Block seiner Form nach in das Spielfeld
 		for(int i = 0; i < currentBlockDimY; i++) {
 			for(int j = 0; j < currentBlockDimX; j++) {
 				// Wenn die momentane Position ein Teil des Blockes enthält, soll dieser auf das Spielfeld übertragen werden.
-				if(currentBlockField[i][j] == Spielblock.BLOCK_CHAR) {
+				if(currentBlockField[i][j] == blockColor) {
 					// Die Position im Spielfeld muss um den versatz blockstart angepasst werden, da das Feld currentBlock eine andere Größe hat.
-					this.playfield[i+this.blockstart_y][j+this.blockstart_x] = Spielblock.BLOCK_CHAR;
+					this.playfield[i+this.blockstart_y][j+this.blockstart_x] = blockColor;
 					this.currentBlock.setPosition(positionCounter, 0, (i+this.blockstart_y));
 					this.currentBlock.setPosition(positionCounter, 1, (j+this.blockstart_x));
 					positionCounter++;
@@ -273,7 +305,7 @@ public class Modell{
 		// Durchlaufe das Spielfeld
 		for(int i = 0; i < playfield.length; i++){
 			for(int j = 0; j < playfield[0].length; j++){
-				if(playfield[i][j] == Spielblock.BLOCK_CHAR) {
+				if(playfield[i][j] == this.currentBlock.getBlockChar()) {
 					playfield[i][j] = PLYFLD_FREE_CHAR;
 				}
 			}
@@ -284,7 +316,7 @@ public class Modell{
 			newPosition = this.currentBlock.getPosition(i, 0) + 1;
 			this.currentBlock.setPosition(i, 0, newPosition);
 			// Update das Spielfeld mit der aktuellen Position.
-			playfield[this.currentBlock.getPosition(i,0)][this.currentBlock.getPosition(i,1)] = Spielblock.BLOCK_CHAR;
+			playfield[this.currentBlock.getPosition(i,0)][this.currentBlock.getPosition(i,1)] = this.currentBlock.getBlockChar();
 	
 		}
 	}
@@ -302,7 +334,9 @@ public class Modell{
 				// Nächster Feld auf das der currentBlock fällt ist die untere Grenze, er kann nicht weiter fallen.
 				obstacleDetected = true;
 			}
-			else if(this.playfield[lowestPosition[0]+1][nextPositionY] == Spielblock.PLAYFIELD_BLOCK_CHAR) {
+			// Wenn der Nächste Block eine Zahl als Farbkodierung hat, ist dieser ein gesetzter Block und damit ein Hinderniss.
+			else if(contains(Spielblock.SET_BLOCK_CHAR_COLOR, this.playfield[lowestPosition[0]+1][nextPositionY])) {
+			//else if(this.playfield[lowestPosition[0]+1][nextPositionY] == Spielblock.PLAYFIELD_BLOCK_CHAR) {
 				// Nächstes Feld auf das der currentBlock fällt ist ein anderer Block, er kann nicht weiter fallen.
 				obstacleDetected = true;
 			}
@@ -320,8 +354,10 @@ public class Modell{
 				// Nächster Feld auf das der currentBlock fällt ist die untere Grenze, er kann nicht weiter fallen.
 				obstacleDetected = true;
 			}
-			else if(this.playfield[lowestPosition[0]+1][nextPositionY] == Spielblock.PLAYFIELD_BLOCK_CHAR ||
-					this.playfield[lowestPosition[0]+1][nextPositionY - 1] == Spielblock.PLAYFIELD_BLOCK_CHAR) {
+			else if(contains(Spielblock.SET_BLOCK_CHAR_COLOR, this.playfield[lowestPosition[0]+1][nextPositionY]) ||
+					contains(Spielblock.SET_BLOCK_CHAR_COLOR, this.playfield[lowestPosition[0]+1][nextPositionY - 1])) {
+			//else if(this.playfield[lowestPosition[0]+1][nextPositionY] == Spielblock.PLAYFIELD_BLOCK_CHAR ||
+			//		this.playfield[lowestPosition[0]+1][nextPositionY - 1] == Spielblock.PLAYFIELD_BLOCK_CHAR) {
 				// Nächstes Feld auf das der currentBlock fällt ist ein anderer Block, er kann nicht weiter fallen.
 				obstacleDetected = true;
 			}
@@ -385,7 +421,8 @@ public class Modell{
 				// Block stößt an seitlichen bzw unteren Rand an.
 				notObstructed = false;
 			}
-			else if(this.playfield[currentlyCheckingPosition[0]][currentlyCheckingPosition[1]] == Spielblock.PLAYFIELD_BLOCK_CHAR) {
+			else if (contains(Spielblock.SET_BLOCK_CHAR_COLOR, this.playfield[currentlyCheckingPosition[0]][currentlyCheckingPosition[1]])) {
+			//else if(this.playfield[currentlyCheckingPosition[0]][currentlyCheckingPosition[1]] == Spielblock.PLAYFIELD_BLOCK_CHAR) {
 				// Block stoßt an bereits gesetzten Block an.
 				notObstructed = false;
 			}
@@ -395,11 +432,11 @@ public class Modell{
 	
 	
 	
-	// Überträgt die Positionen vom derzeitigen currentBlock in das Spielfeld als PLAYFIELD_BLOCK_CHAR.
+	// Überträgt die Positionen vom derzeitigen currentBlock in das Spielfeld als .
 	public void insertCurrentBlockAsPlayfieldBlock() {
 		for(int i =0; i < Spielblock.POSITION_LENGHT_Y;i++) {
 			//this.playfield[this.currentBlock.getPosition(i, 0)][this.currentBlock.getPosition(i, 1)] = Spielblock.PLAYFIELD_BLOCK_CHAR;
-			this.setPlayfieldAt(this.currentBlock.getPosition(i, 0), this.currentBlock.getPosition(i, 1), Spielblock.PLAYFIELD_BLOCK_CHAR);
+			this.setPlayfieldAt(this.currentBlock.getPosition(i, 0), this.currentBlock.getPosition(i, 1), this.currentBlock.setNewColorCharForSetBlock(this.currentBlock.getBlockChar()));
 		}
 	}
 	
@@ -408,7 +445,8 @@ public class Modell{
 		boolean gameEnd = false;
 		for(int i = 0; i < Modell.BUFFER_Y; i ++) {
 			for(int j = 0; j < Modell.PLYFLD_X; j++){
-				if(this.playfield[i][j] == Spielblock.PLAYFIELD_BLOCK_CHAR) {
+				if(contains(Spielblock.SET_BLOCK_CHAR_COLOR, this.playfield[i][j])) {
+				//if(this.playfield[i][j] == Spielblock.PLAYFIELD_BLOCK_CHAR) {
 					gameEnd = true;
 					break;
 				}
@@ -461,7 +499,7 @@ public class Modell{
 				
 				// Übertrage die neuen Werte auf das Spielfeld
 				
-				playfield[this.currentBlock.getPosition(i_row, 0)][this.currentBlock.getPosition(i_row, 1)] = Spielblock.BLOCK_CHAR;
+				playfield[this.currentBlock.getPosition(i_row, 0)][this.currentBlock.getPosition(i_row, 1)] = this.currentBlock.getBlockChar();//Spielblock.BLOCK_CHAR;
 			}
 		}
 		
@@ -560,7 +598,7 @@ public class Modell{
 					this.currentBlock.setPosition(i, 0, newPosition[i][0]);
 					this.currentBlock.setPosition(i, 1, newPosition[i][1]);
 					//Setze die neuen Werte in das Spielfeld ein.
-					this.setPlayfieldCharacterAtPosition(newPosition[i][0], newPosition[i][1], Spielblock.BLOCK_CHAR);
+					this.setPlayfieldCharacterAtPosition(newPosition[i][0], newPosition[i][1], this.currentBlock.getBlockChar());
 				}
 				System.out.println("Nach Rotation: ");
 				this.printPlayfield();
@@ -673,6 +711,10 @@ public class Modell{
 	
 	// Getter und Setter Methoden
 	
+	public synchronized char[][] getWholePlayfield(){
+		return this.playfield.clone();
+	}
+	
 	public synchronized int getPlayfieldRowLenght() {
 		return this.playfield.length;
 	}
@@ -728,6 +770,20 @@ public class Modell{
 	public synchronized void setPlayfieldCharacterAtPosition(int row, int column, char newCharacter) {
 		this.playfield[row][column] = newCharacter;
 	}
+	
+	public boolean contains(char[] array, char findChar) {
+		boolean contains = false;
+		for(int i = 0; i < array.length; i++) {
+			if(array[i] == findChar) {
+				contains = true;
+				break;
+			}
+		}
+		return contains;
+	}
+
+	
+	
 	
 	// Getter und Setter Methoden Ende
 	

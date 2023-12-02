@@ -18,8 +18,13 @@ public class Steuerung {
 	static final int WAIT_ROTATE_TIME = 100;
 	
 	
-	Ansicht gui = new Ansicht();
-	Modell model = new Modell();
+	Ansicht gui;
+	Modell model;
+	
+	public Steuerung() {
+		gui = new Ansicht();
+		model  = new Modell();
+	}
 	
 	
 	public void startGame(String[] args) {
@@ -50,6 +55,7 @@ public class Steuerung {
 				
 				// Setup Playfield
 				model.createPlayfieldBorder();
+				//TODO: Starte erst wenn die GUI fertig gebaut wurde und angezeigt wird.
 				playLoop();
 			}	
 		};
@@ -119,8 +125,6 @@ public class Steuerung {
 		}
 	}
 	
-	public void debugTest() {}
-	
 	
 	public void playLoop() {
 		boolean run = true;
@@ -153,7 +157,7 @@ public class Steuerung {
 			//Debug End
 			
 			//model.setCurrentBlock(new Spielblock("convex"));
-			// TODO: Nächsten Block auch gleich erschaffen.
+			
 			// Spielblock in Bufferzone von Spielfeld legen.
 			model.putBlockInBufferzone();
 			// Drucke Spielfeld mit Bufferzone.
@@ -210,6 +214,7 @@ public class Steuerung {
 	static synchronized String getMap() {
 		return Steuerung.map;
 	}
+	
 	static synchronized void setMap(String newMap) {
 		Steuerung.map = newMap;
 	}
@@ -219,5 +224,13 @@ public class Steuerung {
 	static synchronized void setNextBlockMap(String newNextBlockMap) {
 		Steuerung.nextBlockMap = newNextBlockMap;
 	}
+	/*static synchronized char[][] getPlayfield(){
+		return model.getWholePlayfield();
+	}
+	*/
+	public synchronized void getControllToGUI() {
+		this.gui.setControll(this);	
+	}
+	
 }
 

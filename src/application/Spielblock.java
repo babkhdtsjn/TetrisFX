@@ -1,14 +1,23 @@
 package application;
 
 public class Spielblock {
-	static final public char BLOCK_CHAR = 'x';
-	static final public char PLAYFIELD_BLOCK_CHAR = 'o';
+	//static final public char BLOCK_CHAR = 'x';
+	//static final public char PLAYFIELD_BLOCK_CHAR = 'o';
 	
 	static final public int POSITION_LENGHT_X = 2;
 	static final public int POSITION_LENGHT_Y = 4;
 	
+	public static final String[] BLOCK_COLORS = {"Red", "Blue", "Yellow", "Purple", "Green", "Lightblue"};
+	// Gibt Information darüber mit welchem Zeichen, welche Farbe der gesetzten Blöcke festgehalten wird.
+	// Red = r; Blue = b, Yellow = y, Purple = p, Green = g, Lightblue = l
+	
+	static final public char[] BLOCK_CHAR_COLOR = new char[] {'r','b','y','p','g','l'};
+	static final public char[] SET_BLOCK_CHAR_COLOR = new char[] {'1','2','3','4','5','6'};
 	
 	private String blockName;
+	// Farben: Rot,Blau, Gelb, Lila, Orange, Grün, Hellblau
+	private String color;
+	private char blockChar;
 	/*
 	 * blockField enthält die konkrete Information wie ein Block in einem array liegt.
 	 * Es gibt 
@@ -46,68 +55,70 @@ public class Spielblock {
 	private int [][] position;
 	
 	public Spielblock(String name) {
+		// Festlegen der Farbe des Blocks
+		setRandomColor();
 		switch (name) {
 		case "square":
 			this.blockName = "square";
 			this.blockField = new char [2][2];
-			this.blockField[0][0] = BLOCK_CHAR;
-			this.blockField[0][1] = BLOCK_CHAR;
-			this.blockField[1][0] = BLOCK_CHAR;
-			this.blockField[1][1] = BLOCK_CHAR;
+			this.blockField[0][0] = this.blockChar;
+			this.blockField[0][1] = this.blockChar;
+			this.blockField[1][0] = this.blockChar;
+			this.blockField[1][1] = this.blockChar;
 			break;
 		case "line":
 			this.blockName = "line";
 			// 4 Zeilen, 1 Spalte
 			this.blockField = new char [4][1];
-			this.blockField[0][0] = BLOCK_CHAR;
-			this.blockField[1][0] = BLOCK_CHAR;
-			this.blockField[2][0] = BLOCK_CHAR;
-			this.blockField[3][0] = BLOCK_CHAR;
+			this.blockField[0][0] = this.blockChar;
+			this.blockField[1][0] = this.blockChar;
+			this.blockField[2][0] = this.blockChar;
+			this.blockField[3][0] = this.blockChar;
 			break;
 		case "hook":
 			this.blockName = "hook";
 			// 3 Zeilen, 2 Spalten
 			this.blockField = new char [3][2];
-			this.blockField[0][0] = BLOCK_CHAR;
-			this.blockField[0][1] = BLOCK_CHAR;
-			this.blockField[1][0] = BLOCK_CHAR;
-			this.blockField[2][0] = BLOCK_CHAR;
+			this.blockField[0][0] = this.blockChar;
+			this.blockField[0][1] = this.blockChar;
+			this.blockField[1][0] = this.blockChar;
+			this.blockField[2][0] = this.blockChar;
 			break;
 		case "mirror_hook":
 			this.blockName = "mirror_hook";
 			// 3 Zeilen, 2 Spalten
 			this.blockField = new char [3][2];
-			this.blockField[0][0] = BLOCK_CHAR;
-			this.blockField[0][1] = BLOCK_CHAR;
-			this.blockField[1][1] = BLOCK_CHAR;
-			this.blockField[2][1] = BLOCK_CHAR;
+			this.blockField[0][0] = this.blockChar;
+			this.blockField[0][1] = this.blockChar;
+			this.blockField[1][1] = this.blockChar;
+			this.blockField[2][1] = this.blockChar;
 			break;
 		case "2v2":
 			this.blockName = "2v2";
 			// 3 Zeilen, 2 Spalten
 			this.blockField = new char [3][2];
-			this.blockField[0][0] = BLOCK_CHAR;
-			this.blockField[1][0] = BLOCK_CHAR;
-			this.blockField[1][1] = BLOCK_CHAR;
-			this.blockField[2][1] = BLOCK_CHAR;
+			this.blockField[0][0] = this.blockChar;
+			this.blockField[1][0] = this.blockChar;
+			this.blockField[1][1] = this.blockChar;
+			this.blockField[2][1] = this.blockChar;
 			break;
 		case "mirror_2v2":
 			this.blockName = "mirror_2v2";
 			// 3 Zeilen, 2 Spalten
 			this.blockField = new char [3][2];
-			this.blockField[0][1] = BLOCK_CHAR;
-			this.blockField[1][0] = BLOCK_CHAR;
-			this.blockField[1][1] = BLOCK_CHAR;
-			this.blockField[2][0] = BLOCK_CHAR;
+			this.blockField[0][1] = this.blockChar;
+			this.blockField[1][0] = this.blockChar;
+			this.blockField[1][1] = this.blockChar;
+			this.blockField[2][0] = this.blockChar;
 			break;
 		case "convex":
 			this.blockName = "convex";
 			// 3 Zeilen, 2 Spalten
 			this.blockField = new char [3][2];
-			this.blockField[0][0] = BLOCK_CHAR;
-			this.blockField[1][0] = BLOCK_CHAR;
-			this.blockField[1][1] = BLOCK_CHAR;
-			this.blockField[2][0] = BLOCK_CHAR;
+			this.blockField[0][0] = this.blockChar;
+			this.blockField[1][0] = this.blockChar;
+			this.blockField[1][1] = this.blockChar;
+			this.blockField[2][0] = this.blockChar;
 			break;
 		default:
 			System.out.println("FEHLER!");
@@ -122,6 +133,8 @@ public class Spielblock {
 		// Initialisieren des Feldes für die Positionierung
 		// 4 x-und y-Wert Paare
 		this.position = new int [POSITION_LENGHT_Y][POSITION_LENGHT_X];
+		
+		
 	}
 	
 	
@@ -135,12 +148,14 @@ public class Spielblock {
 		for(int i = 0;i < this.blockField.length ; i++) {
 			System.out.println(" ");
 			for(int j = 0; j < this.blockField[i].length; j++) {
-				if(blockField[i][j] == BLOCK_CHAR) {
+				/*if(blockField[i][j] == BLOCK_CHAR) {
 					System.out.print(BLOCK_CHAR);
 				}
 				else {
 					System.out.print(' ');
 				}
+				*/
+				System.out.print(blockField[i][j]);
 			}
 		}
 	}
@@ -150,12 +165,13 @@ public class Spielblock {
 		for(int i = 0;i < this.blockField.length ; i++) {
 			System.out.println(" ");
 			for(int j = 0; j < this.blockField[i].length; j++) {
+				/*
 				if(blockField[i][j] == BLOCK_CHAR) {
 					blockAsString = blockAsString + BLOCK_CHAR;
 				}
-				else {
+				else {*/
 					blockAsString = blockAsString + blockField[i][j];
-				}
+				//}
 			}
 			if((i + 1) == blockField.length) {
 				blockAsString = blockAsString + "";
@@ -216,6 +232,44 @@ public class Spielblock {
 		this.turnPlus = newTurn;
 	}
 	
+	public synchronized void setColor(String newColor) {
+		this.color = newColor;
+	}
+	
+	public synchronized String getColor() {
+		return this.color;
+	}
+	
+	public synchronized void setBlockChar(char blockChar) {
+		this.blockChar = blockChar;
+	}
+	
+	public synchronized char getBlockChar() {
+		return this.blockChar;
+	}
+	
+	public synchronized void setRandomColor() {
+		int randomNumber = (int)((Math.random()) * Spielblock.BLOCK_COLORS.length);
+		setColor(Spielblock.BLOCK_COLORS[randomNumber]);
+		setBlockChar(Spielblock.BLOCK_CHAR_COLOR[randomNumber]);
+	}
+	
+	public synchronized char setNewColorCharForSetBlock(char currentChar) {
+		//Arrays.asList(Spielblock.BLOCK_CHAR_COLOR).indexOf(currentChar);
+		//int index = Arrays.asList(Spielblock.BLOCK_CHAR_COLOR).indexOf(currentChar);
+		
+		int pos = -1;
+		for(int i = 0; i < Spielblock.BLOCK_CHAR_COLOR.length; i++) {
+		  if(Spielblock.BLOCK_CHAR_COLOR[i] == currentChar) {
+		     pos = i;
+		     break;
+		  }
+		}
+		return Spielblock.SET_BLOCK_CHAR_COLOR[pos];
+	}
+	
+	
 	//public void setBlockDim() {}
 }
+
 
