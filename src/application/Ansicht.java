@@ -1,18 +1,15 @@
 package application;
 import javafx.application.Platform;
 
-
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
-import javafx.scene.text.Text; 
 import javafx.geometry.Insets;
 //import javafx.scene.text.Font;
 import javafx.scene.input.KeyEvent;
 import javafx.event.EventHandler;
-//import javafx.stage.Stage;
-//import javafx.event.*;
+import javafx.stage.WindowEvent;
 //import javafx.scene.robot.*;
 //import javafx.scene.input.*;
 
@@ -45,14 +42,15 @@ public class Ansicht extends Application{
 	
 	@Override
 	public void start(Stage primaryStage) {
-		/*primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+		
+		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 		    @Override
 		    public void handle(WindowEvent t) {
 		        Platform.exit();
 		        System.exit(0);
 		    }
 		});
-		*/
+		
 		try {
 			this.root.setPadding(new Insets(0));
 		    this.root.setHgap(0);
@@ -66,6 +64,9 @@ public class Ansicht extends Application{
 		    renderer = new Bildrenderer(root);
 			 // Initialisierung des Fensters
 			this.primaryStage = primaryStage;
+			
+			   
+			
 			// this.text = new Text();
 			 // this.text.setFont(Font.font("Courier"));
 			//this.playfieldText.setStyle("-fx-font: normal bold 22px 'Courier' "); 
@@ -87,9 +88,6 @@ public class Ansicht extends Application{
 			 */
 			
 			
-			
-			
-			
 			//TODO: auslagern!
 			 
 			 //this.text.setFont("Courier", FontWeight.BOLD, FontPosture.REGULAR, 20);
@@ -100,7 +98,11 @@ public class Ansicht extends Application{
 			 Scene scene = new Scene(root,530,700);  
 			 //this.root.getChildren().add(playfieldText);  
 			 this.primaryStage.setScene(scene);  
-			 this.primaryStage.setTitle("Tetris");  
+			 this.primaryStage.setTitle("Tetris"); 
+			 
+			 
+			 
+			 
 			 this.primaryStage.show();
 			 
 			 

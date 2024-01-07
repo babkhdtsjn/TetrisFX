@@ -78,7 +78,7 @@ public class Steuerung {
 					// Die Variable wird auf false zurückgesetzt wenn die Taste losgelassen wird.
 					if(Ansicht.getTurned() == false) {
 						Ansicht.setTurned(true);
-						model.rotateCurrentBlock();
+						model.rotateCurrentBlock2();
 						System.out.println("---------------Rotating!!!!!!!");
 						Modell.wait(WAIT_ROTATE_TIME);
 					}
@@ -133,18 +133,20 @@ public class Steuerung {
 		while(run) {
 			// Spielblock erschaffen.
 			if(model.getNextBlock() == null) {
+				
 				model.setCurrentBlock(model.createRandomBlock());
 				model.setNextBlock(model.createRandomBlock());
 				Steuerung.setNextBlockMap(model.getNextBlock().printBlockAsString());
 				//nextBlockMap = model.getNextBlock().printBlockAsString();
 			}
 			else {
+				
 				model.setCurrentBlock(model.getNextBlock());
 				model.setNextBlock(model.createRandomBlock());
+				
 				Steuerung.setNextBlockMap(model.getNextBlock().printBlockAsString());
 				
 			}
-			//Debug
 			/*if(debug == 1) {
 				for(int i = 1; i<(model.getPlayfieldColumnLenght()-2); i++) {
 					model.setPlayfieldAt(model.getPlayfieldRowLenght() - 4,i , 'o');

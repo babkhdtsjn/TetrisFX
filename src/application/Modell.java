@@ -416,16 +416,19 @@ public class Modell{
 			int[] currentlyCheckingPosition = new int[2];
 			currentlyCheckingPosition[0] = newPosition[i_row][0];//y-Koordinate eines Pixels der neuen Position / Reihe.
 			currentlyCheckingPosition[1] = newPosition[i_row][1];//x-Koordinate eines Pixels der neuen Position / Spalte.
-			if(this.playfield[currentlyCheckingPosition[0]][currentlyCheckingPosition[1]] == PLYFLD_SIDE_BORDER_CHAR || 
-					this.playfield[currentlyCheckingPosition[0]][currentlyCheckingPosition[1]] == PLYFLD_BOTTOM_BORDER_CHAR) {
-				// Block stößt an seitlichen bzw unteren Rand an.
-				notObstructed = false;
-			}
-			else if (contains(Spielblock.SET_BLOCK_CHAR_COLOR, this.playfield[currentlyCheckingPosition[0]][currentlyCheckingPosition[1]])) {
-			//else if(this.playfield[currentlyCheckingPosition[0]][currentlyCheckingPosition[1]] == Spielblock.PLAYFIELD_BLOCK_CHAR) {
-				// Block stoßt an bereits gesetzten Block an.
-				notObstructed = false;
-			}
+			try {
+				if(this.playfield[currentlyCheckingPosition[0]][currentlyCheckingPosition[1]] == PLYFLD_SIDE_BORDER_CHAR || 
+						this.playfield[currentlyCheckingPosition[0]][currentlyCheckingPosition[1]] == PLYFLD_BOTTOM_BORDER_CHAR) {
+					// Block stößt an seitlichen bzw unteren Rand an.
+					notObstructed = false;
+				}
+				else if (contains(Spielblock.SET_BLOCK_CHAR_COLOR, this.playfield[currentlyCheckingPosition[0]][currentlyCheckingPosition[1]])) {
+				//else if(this.playfield[currentlyCheckingPosition[0]][currentlyCheckingPosition[1]] == Spielblock.PLAYFIELD_BLOCK_CHAR) {
+					// Block stoßt an bereits gesetzten Block an.
+					notObstructed = false;
+				}
+			}catch (Exception e) {
+            }
 		}
 		return notObstructed;
 	}
@@ -616,6 +619,294 @@ public class Modell{
 				*/
 		}
 	}
+	
+	
+	
+	//-------------------Neue Rotation
+	// Hook und mirror_2v2 funktionieren noch nicht
+	public void rotateCurrentBlock2() {
+		if(this.currentBlock.getBlockName() != "square") {
+		 int rotatingPixel = 2;
+		 /*if(this.currentBlock.getBlockName() == "hook") {
+				rotatingPixel = 1;
+			}
+		if(this.currentBlock.getBlockName() == "mirror2v2") {
+			rotatingPixel = 3;
+		}
+		*/
+		
+		int[][] oldPosition = new int[4][2];
+		
+		
+		for(int i = 0; i < oldPosition.length; i++) {
+			oldPosition[i][0] = this.currentBlock.getPositionAt(i, 0) ; 
+			oldPosition[i][1] = this.currentBlock.getPositionAt(i, 1) ; 
+		}
+		
+		System.out.println("-------- Alte Position des zu rotierenden Blockes:");
+		System.out.println("-- Pixel 1: x: "+ oldPosition[0][1] + " y: " + oldPosition[0][0]);
+		System.out.println("-- Pixel 2: x: "+ oldPosition[1][1] + " y: " + oldPosition[1][0]);
+		System.out.println("-- Pixel 3: x: "+ oldPosition[2][1] + " y: " + oldPosition[2][0]);
+		System.out.println("-- Pixel 4: x: "+ oldPosition[3][1] + " y: " + oldPosition[3][0]);
+		
+		//int[][] oldPosition = this.currentBlock.getPosition(); // Call by reference!!
+		// Aktualisierte Werte werden erst in newPosition zwischengespeichert und nachdem sie mit checkPosition überprüft wurden,
+		// auf die tatsächliche Positionsvariable und ins Feld geschrieben.
+		int[][] newPosition =  new int[4][2];	
+		newPosition[1][0] = this.currentBlock.getPositionAt(1, 0);
+		newPosition[1][1] = this.currentBlock.getPositionAt(1, 1);
+		/*for(int i = 0; i < oldPosition.length; i++) {
+			newPosition[i][0] = this.currentBlock.getPositionAt(i, 0) ; 
+			newPosition[i][1] = this.currentBlock.getPositionAt(i, 1) ; 
+		}
+		*/
+		//int distanceToRotatingPixelY = 0;
+		//int distanceToRotatingPixelX = 0;
+		
+		// TODO : Bestimme den sich rotierenden Pixel anders. 
+		// Im jetzigen Fall ändert sich der Pixel bei jeder Drehung, was dazu führt, dass der Block sich nicht einmal um die komplette Achse drehen kann, sondern nur zwischen 2 Drehpositionen wechselt.
+		//int rotatingPixelYCord = 
+		
+		int rotatingPixelYCord = newPosition[rotatingPixel-1][0];
+		int rotatingPixelXCord = newPosition[rotatingPixel-1][1];
+		
+		System.out.println("-------- Rotations Pixel:");
+		System.out.println("-- Pixel 1: x: "+ rotatingPixelXCord + " y: " + rotatingPixelYCord);
+		
+		
+		
+		
+		//int rotatingPixelYCord = oldPosition[rotatingPixel-1][0];
+		//int rotatingPixelXCord = oldPosition[rotatingPixel-1][1];
+		for(int i = 0; i < 4; i++) {
+			System.out.println("XXXXXXXXXXXXXXXX Counter: " + i);
+			
+			if(i != (rotatingPixel-1)) {
+				System.out.println("-------- Beginn der Berechnungen für die Rotation:");
+				int yCord = oldPosition[i][0];
+				int xCord = oldPosition[i][1];
+				System.out.println("+- Pixel Nr "+i+" des Blockes wird gerade bearbeitet.");
+				System.out.println("+- x: "+ xCord + " y: " + yCord);
+				// Rechne den Unterschied zwischen dem iterierendem Pixel und dem Vergleichspixel.
+				int distanceToRotatingPixelY = rotatingPixelYCord - yCord;
+				int distanceToRotatingPixelX = rotatingPixelXCord - xCord;
+				
+				System.out.println("+- DeltaX Distanzunterschied (rotatingPixelXCord(" + rotatingPixelXCord + ") - xCord( " + xCord + "))  zu Rotationspixel: "+ distanceToRotatingPixelX);
+				System.out.println("+- DeltaY Distanzunterschied (rotatingPixelYCord(" + rotatingPixelYCord + ") - yCord( " + yCord + "))  zu Rotationspixel: "+ distanceToRotatingPixelY);
+				
+				// Wenn die Distanz negativ ist, befindet sich die Pixelposition vor dem Dreher.
+				// Ist die Distanz positiv, befindet sie sich hinter ihm.
+				
+				int newCordY = 0;
+				int newCordX = 0;
+				/*
+				if(distanceToRotatingPixelY < 0) {
+					newCordX = rotatingPixelXCord - Math.abs(distanceToRotatingPixelY);
+				}
+				else if(distanceToRotatingPixelY == 0) {
+					newCordX = rotatingPixelXCord;
+				}
+				else if (distanceToRotatingPixelY > 0) {
+					newCordX = rotatingPixelXCord + Math.abs(distanceToRotatingPixelY);
+				}
+				
+				if(distanceToRotatingPixelX < 0) {
+					newCordY = rotatingPixelYCord - Math.abs(distanceToRotatingPixelX);
+				}
+				else if(distanceToRotatingPixelX == 0) {
+					newCordY = rotatingPixelYCord;
+				}
+				else if (distanceToRotatingPixelX > 0) {
+					newCordY = rotatingPixelYCord + Math.abs(distanceToRotatingPixelX);
+				}
+				*/
+				System.out.println("+- Berechnung der neuen x und y Koordinaten: ");
+				
+				if(distanceToRotatingPixelY < 0 && distanceToRotatingPixelX < 0) {
+					newCordX = rotatingPixelXCord - Math.abs(distanceToRotatingPixelY);
+					newCordY = rotatingPixelYCord + Math.abs(distanceToRotatingPixelX);
+					System.out.println("+- DeltaX Distanzunterschied ist negativ -> Die x-Koordinate ("+ xCord + ") von Pixel " + i + " ist GRÖßER als die des Rotationspunktes (" + rotatingPixelXCord + ").");
+					System.out.println("+- Die alte x Koordinate des Blockpixels befindet sich RECHTS vom Rotationspunkt.");
+					System.out.println("+- DeltaY Distanzunterschied ist negativ -> Die y-Koordinate ("+ yCord + ") von Pixel " + i + " ist GrÖßER als die des Rotationspunktes.(" + rotatingPixelYCord + ").");
+					System.out.println("+- Die alte y Koordinate des Blockpixels befindet sich UNTER dem Rotationspunkt.");
+					
+					System.out.println("+- Der neue Punkt muss UNTEN LINKS vom Rotationspixel liegen.");
+					System.out.println("+- Die neue X Koordinate: "+ newCordX + "; Die alte X Koordinate: " + xCord);
+					System.out.println("+- Die neue Y Koordinate: "+ newCordY + "; Die alte Y Koordinate: " + yCord);
+					System.out.println("+- newCordX(" + newCordX + ") = rotatingPixelXCord( " + rotatingPixelXCord + ") -  Math.abs(distanceToRotatingPixelY)(" +  Math.abs(distanceToRotatingPixelY) +")" );
+					System.out.println("+- newCordY(" + newCordY + ") = rotatingPixelYCord( " + rotatingPixelYCord + ") +  Math.abs(distanceToRotatingPixelX)(" +  Math.abs(distanceToRotatingPixelX) +")" );		
+				}
+				else if(distanceToRotatingPixelY > 0 && distanceToRotatingPixelX < 0) {
+					newCordX = rotatingPixelXCord + Math.abs(distanceToRotatingPixelY);
+					newCordY = rotatingPixelYCord + Math.abs(distanceToRotatingPixelX);
+					
+					System.out.println("+- DeltaX Distanzunterschied ist negativ -> Die x-Koordinate ("+ xCord + ") von Pixel " + i + " ist GRÖßER als die des Rotationspunktes(" + rotatingPixelXCord + ").");
+					System.out.println("+- Die alte x Koordinate des Blockpixels befindet sich RECHTS vom Rotationspunkt.");
+					System.out.println("+- DeltaY Distanzunterschied ist positiv -> Die y-Koordinate ("+ yCord + ") von Pixel " + i + " ist KLEINER als die des Rotationspunktes(" + rotatingPixelXCord + ").");
+					System.out.println("+- Die alte y Koordinate des Blockpixels befindet sich ÜBER dem Rotationspunkt.");
+					
+					System.out.println("+- Der neue Punkt muss UNTEN RECHTS vom Rotationspixel liegen.");
+					System.out.println("+- Die neue X Koordinate: "+ newCordX + "; Die alte X Koordinate: " + xCord);
+					System.out.println("+- newCordX(" + newCordX + ") = rotatingPixelXCord( " + rotatingPixelXCord + ") -  Math.abs(distanceToRotatingPixelY)(" +  Math.abs(distanceToRotatingPixelY) +")" );
+					System.out.println("+- newCordY(" + newCordY + ") = rotatingPixelYCord( " + rotatingPixelYCord + ") -  Math.abs(distanceToRotatingPixelX)(" +  Math.abs(distanceToRotatingPixelX) +")" );		
+				
+				}
+				else if(distanceToRotatingPixelY > 0 && distanceToRotatingPixelX > 0) {
+					newCordX = rotatingPixelXCord + Math.abs(distanceToRotatingPixelY);
+					newCordY = rotatingPixelYCord - Math.abs(distanceToRotatingPixelX);
+					
+					System.out.println("+- DeltaX Distanzunterschied ist positiv -> Die x-Koordinate ("+ xCord + ") von Pixel " + i + " ist KLEINER als die des Rotationspunktes(" + rotatingPixelXCord + ").");
+					System.out.println("+- Die alte x Koordinate des Blockpixels befindet sich LINKS vom Rotationspunkt.");
+					System.out.println("+- DeltaY Distanzunterschied ist positiv -> Die y-Koordinate ("+ yCord + ") von Pixel " + i + " ist KLEINER als die des Rotationspunktes(" + rotatingPixelXCord + ").");
+					System.out.println("+- Die alte y Koordinate des Blockpixels befindet sich ÜBER dem Rotationspunkt.");
+					
+					System.out.println("+- Der neue Punkt muss OBEN RECHTS vom Rotationspixel liegen.");
+					System.out.println("+- Die neue X Koordinate: "+ newCordX + "; Die alte X Koordinate: " + xCord);
+					System.out.println("+- newCordX(" + newCordX + ") = rotatingPixelXCord( " + rotatingPixelXCord + ") +  Math.abs(distanceToRotatingPixelY)(" +  Math.abs(distanceToRotatingPixelY) +")" );
+					System.out.println("+- newCordY(" + newCordY + ") = rotatingPixelYCord( " + rotatingPixelYCord + ") -  Math.abs(distanceToRotatingPixelX)(" +  Math.abs(distanceToRotatingPixelX) +")" );		
+				
+				}
+				else if(distanceToRotatingPixelY < 0 && distanceToRotatingPixelX > 0) {
+					newCordX = rotatingPixelXCord - Math.abs(distanceToRotatingPixelY);
+					newCordY = rotatingPixelYCord - Math.abs(distanceToRotatingPixelX);
+					
+					System.out.println("+- DeltaX Distanzunterschied ist positiv -> Die x-Koordinate ("+ xCord + ") von Pixel " + i + " ist KLEINER als die des Rotationspunktes(" + rotatingPixelXCord + ").");
+					System.out.println("+- Die alte x Koordinate des Blockpixels befindet sich LINKS vom Rotationspunkt.");
+					System.out.println("+- DeltaY Distanzunterschied ist negativ -> Die y-Koordinate ("+ yCord + ") von Pixel " + i + " ist GRÖßER als die des Rotationspunktes(" + rotatingPixelXCord + ").");
+					System.out.println("+- Die alte y Koordinate des Blockpixels befindet sich UNTER dem Rotationspunkt.");
+					
+					System.out.println("+- Der neue Punkt muss OBEN LINKS vom Rotationspixel liegen.");
+					System.out.println("+- Die neue X Koordinate: "+ newCordX + "; Die alte X Koordinate: " + xCord);
+					System.out.println("+- newCordX(" + newCordX + ") = rotatingPixelXCord( " + rotatingPixelXCord + ") +  Math.abs(distanceToRotatingPixelY)(" +  Math.abs(distanceToRotatingPixelY) +")" );
+					System.out.println("+- newCordY(" + newCordY + ") = rotatingPixelYCord( " + rotatingPixelYCord + ") +  Math.abs(distanceToRotatingPixelX)(" +  Math.abs(distanceToRotatingPixelX) +")" );		
+				
+				}
+				
+				else if(distanceToRotatingPixelY == 0 && distanceToRotatingPixelX < 0) {
+					newCordX = rotatingPixelXCord;
+					newCordY = rotatingPixelYCord + Math.abs(distanceToRotatingPixelX);
+					
+					System.out.println("+- DeltaX Distanzunterschied ist negativ -> Die x-Koordinate ("+ xCord + ") von Pixel " + i + " ist GRÖßER als die des Rotationspunktes(" + rotatingPixelXCord + ").");
+					System.out.println("+- Die alte x Koordinate des Blockpixels befindet sich RECHTS vom Rotationspunkt.");
+					System.out.println("+- DeltaY Distanzunterschied ist gleich 0 -> Die y-Koordinate ("+ yCord + ") von Pixel " + i + " ist AUF DER SELBEN KOORDINATE wie die des Rotationspunktes(" + rotatingPixelXCord + ").");
+					System.out.println("+- Die alte y Koordinate des Blockpixels befindet sich IN EINER LINIE mit dem Rotationspunkt.");
+					
+					System.out.println("+- Der neue Punkt muss IN EINER LINIE UNTER dem Rotationspixel liegen.");
+					System.out.println("+- Die neue X Koordinate: "+ newCordX + "; Die alte X Koordinate: " + xCord);
+					System.out.println("+- newCordX(" + newCordX + ") = rotatingPixelYCord( " + rotatingPixelYCord + ")");
+					System.out.println("+- newCordY(" + newCordY + ") = rotatingPixelYCord( " + rotatingPixelYCord + ") +  Math.abs(distanceToRotatingPixelX)(" +  Math.abs(distanceToRotatingPixelX) +")" );		
+				
+				}
+				
+				else if(distanceToRotatingPixelY == 0 && distanceToRotatingPixelX > 0) {
+					newCordX = rotatingPixelXCord;
+					newCordY = rotatingPixelYCord - Math.abs(distanceToRotatingPixelX);
+					
+					System.out.println("+- DeltaX Distanzunterschied ist positiv -> Die x-Koordinate ("+ xCord + ") von Pixel " + i + " ist KLEINER als die des Rotationspunktes(" + rotatingPixelXCord + ").");
+					System.out.println("+- Die alte x Koordinate des Blockpixels befindet sich LINKS vom Rotationspunkt.");
+					System.out.println("+- DeltaY Distanzunterschied ist gleich 0 -> Die y-Koordinate ("+ yCord + ") von Pixel " + i + " ist AUF DER SELBEN KOORDINATE wie die des Rotationspunktes(" + rotatingPixelXCord + ").");
+					System.out.println("+- Die alte y Koordinate des Blockpixels befindet sich IN EINER LINIE mit dem Rotationspunkt.");
+					
+					System.out.println("+- Der neue Punkt muss IN EINER LINIE ÜBER dem Rotationspixel liegen.");
+					System.out.println("+- Die neue X Koordinate: "+ newCordX + "; Die alte X Koordinate: " + xCord);
+					System.out.println("+- newCordX(" + newCordX + ") = rotatingPixelYCord( " + rotatingPixelYCord + ")");
+					System.out.println("+- newCordY(" + newCordY + ") = rotatingPixelYCord( " + rotatingPixelYCord + ") -  Math.abs(distanceToRotatingPixelX)(" +  Math.abs(distanceToRotatingPixelX) +")" );		
+				
+				}
+				
+				else if(distanceToRotatingPixelY < 0 && distanceToRotatingPixelX == 0) {
+					newCordX = rotatingPixelXCord - Math.abs(distanceToRotatingPixelY);
+					newCordY = rotatingPixelYCord;
+					
+					System.out.println("+- DeltaX Distanzunterschied ist gleich 0 -> Die x-Koordinate ("+ xCord + ") von Pixel " + i + " ist AUF DER SELBEN KOORDINATE wie die des Rotationspunktes(" + rotatingPixelXCord + ").");
+					System.out.println("+- Die alte x Koordinate des Blockpixels befindet sich IN EINER LINIE mit dem Rotationspunkt.");
+					System.out.println("+- DeltaY Distanzunterschied ist negativ -> Die y-Koordinate ("+ yCord + ") von Pixel " + i + " ist GRÖßER als die des Rotationspunktes(" + rotatingPixelXCord + ").");
+					System.out.println("+- Die alte y Koordinate des Blockpixels befindet sich UNTER dem Rotationspunkt.");
+					
+					System.out.println("+- Der neue Punkt muss IN EINER LINIE LINKS dem Rotationspixel liegen.");
+					System.out.println("+- Die neue X Koordinate: "+ newCordX + "; Die alte X Koordinate: " + xCord);
+					System.out.println("+- newCordX(" + newCordX + ") = rotatingPixelXCord( " + rotatingPixelYCord + ") -  Math.abs(distanceToRotatingPixelY)(" +  Math.abs(distanceToRotatingPixelY) + ")");
+					System.out.println("+- newCordY(" + newCordY + ") = rotatingPixelXCord( " + rotatingPixelXCord + "");
+				
+				}
+				
+				else if(distanceToRotatingPixelY > 0 && distanceToRotatingPixelX == 0) {
+					newCordX = rotatingPixelXCord + Math.abs(distanceToRotatingPixelY);
+					newCordY = rotatingPixelYCord;
+					
+					System.out.println("+- DeltaX Distanzunterschied ist gleich 0 -> Die x-Koordinate ("+ xCord + ") von Pixel " + i + " ist AUF DER SELBEN KOORDINATE wie die des Rotationspunktes(" + rotatingPixelXCord + ").");
+					System.out.println("+- Die alte x Koordinate des Blockpixels befindet sich IN EINER LINIE mit dem Rotationspunkt.");
+					System.out.println("+- DeltaY Distanzunterschied ist positiv -> Die y-Koordinate ("+ yCord + ") von Pixel " + i + " ist KLEINER als die des Rotationspunktes(" + rotatingPixelXCord + ").");
+					System.out.println("+- Die alte y Koordinate des Blockpixels befindet sich ÜBER dem Rotationspunkt.");
+					
+					System.out.println("+- Der neue Punkt muss IN EINER LINIE RECHTS dem Rotationspixel liegen.");
+					System.out.println("+- Die neue X Koordinate: "+ newCordX + "; Die alte X Koordinate: " + xCord);
+					System.out.println("+- newCordX(" + newCordX + ") = rotatingPixelXCord( " + rotatingPixelYCord + ") +  Math.abs(distanceToRotatingPixelY)(" +  Math.abs(distanceToRotatingPixelY) + ")");
+					System.out.println("+- newCordY(" + newCordY + ") = rotatingPixelXCord( " + rotatingPixelXCord + "");
+				}
+				
+				newPosition[i][0] = newCordY;
+				newPosition[i][1] = newCordX;
+				
+			
+			
+			}
+		}
+		System.out.println("+++++++++++++ Alte Position des zu rotierenden Blockes:");
+		System.out.println("-- Pixel 1: x: "+ oldPosition[0][1] + " y: " + oldPosition[0][0]);
+		System.out.println("-- Pixel 2: x: "+ oldPosition[1][1] + " y: " + oldPosition[1][0]);
+		System.out.println("-- Pixel 3: x: "+ oldPosition[2][1] + " y: " + oldPosition[2][0]);
+		System.out.println("-- Pixel 4: x: "+ oldPosition[3][1] + " y: " + oldPosition[3][0]);
+		
+		System.out.println("+++++++++++++ Neue Position des zu rotierenden Blockes:");
+		System.out.println("-- Pixel 1: x: "+ newPosition[0][1] + " y: " + newPosition[0][0]);
+		System.out.println("-- Pixel 2: x: "+ newPosition[1][1] + " y: " + newPosition[1][0]);
+		System.out.println("-- Pixel 3: x: "+ newPosition[2][1] + " y: " + newPosition[2][0]);
+		System.out.println("-- Pixel 4: x: "+ newPosition[3][1] + " y: " + newPosition[3][0]);
+		System.out.println();
+				
+			// Prüfe ob platz für Rotation ist oder ob nicht gedreht werden kann.
+			if(this.checkNewPosition(newPosition) == true) {
+				currentBlock.setTurnPlus(!(currentBlock.getTurnPlus())); 
+				// Lösche alte Werte aus dem Spielfeld.
+				for(int i = 0; i < oldPosition.length; i++) {
+					//playfield[this.currentBlock.getPosition(i_row, 0)][this.currentBlock.getPosition(i_row, 1)] = PLYFLD_FREE_CHAR;
+					
+					this.setPlayfieldCharacterAtPosition(oldPosition[i][0], oldPosition[i][1], PLYFLD_FREE_CHAR);
+					//System.out.println("Cleared Field: Y: "+oldPosition[i][0]+", X: "+ oldPosition[i][1]);
+					//this.printPlayfield();
+				}
+				//System.out.println("-----Cleared Field: ");
+				//this.printPlayfield();
+					
+				for(int i = 0; i < newPosition.length; i++) {
+					// Lösche alte Werte aus der Spielkarte.
+					//this.setPlayfieldCharacterAtPosition(oldPosition[i][0], oldPosition[i][1], PLYFLD_FREE_CHAR);
+					// Setze die neuen Were in den currentBlock ein.
+					this.currentBlock.setPosition(i, 0, newPosition[i][0]);
+					this.currentBlock.setPosition(i, 1, newPosition[i][1]);
+					//Setze die neuen Werte in das Spielfeld ein.
+					this.setPlayfieldCharacterAtPosition(newPosition[i][0], newPosition[i][1], this.currentBlock.getBlockChar());
+				}
+				System.out.println("Nach Rotation: ");
+				this.printPlayfield();
+			}
+				/*
+				// Lösche alte Werte aus der Spielkarte.
+				this.setPlayfieldCharacterAtPosition(oldPosition[i][0], oldPosition[i][1], PLYFLD_FREE_CHAR);
+				
+				// Setze den neuen Wert in den currentBlock ein.
+				this.currentBlock.setPosition(i, 0, newCordY);
+				this.currentBlock.setPosition(i, 1, newCordX);
+				
+				// Update die Spielkarte.
+				this.setPlayfieldCharacterAtPosition(this.currentBlock.getPositionAt(i, 0), this.currentBlock.getPositionAt(i, 1), Spielblock.BLOCK_CHAR);
+				*/
+		}
+	}
+	
+	
+	//-------------------Ende neue Rotation
 	
 	
 	// Funktion die Überprüft, ob irgendwo auf dem Spielfeld eine Reihe zustandegekommen ist.
