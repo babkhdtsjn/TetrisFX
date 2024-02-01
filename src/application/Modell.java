@@ -33,18 +33,29 @@ public class Modell{
 	static final  int SCORE_BONUS_CLEARED_ROW = 10;
 	
 	// ms die ein Block braucht um zu fallen.
-	static final int FALL_TIME_NORMAL = 1000;
+	static final int FALL_TIME_NORMAL = 1000;		
 	static final int FALL_TIME_SPEEDUP = 150;
-	static int fallTime = 1000;
+	static final int FALL_TIME_MIN = 150;
+	static int fallTimeUpdated = FALL_TIME_NORMAL;
 	
-	// Variable, die dafür sorgt, dass die richtige Funktion fürs Drehen aufgerufen wird.
-	// Die Funktion ist davon abhängig wie oft davor der Block schon gedreht worden ist.
-	//boolean turnPlus = true;
+	static int fallTime = fallTimeUpdated;
+	static int fallTimeSpeedup = FALL_TIME_SPEEDUP;
 	
+	// Nach dieser Anzahl an gefallenen Blöcken, wird die Fallgeschwindigkeit erhöht.
+	static final int SPEED_UP_BLOCK_COUNT_THRESHHOLD = 10;		
+	static final int FALL_TIME_REDUCTION = 70;					
+	
+	private int blockCount = 0;
+	
+	
+
 	// Position an der der Block in die Bufferzone gesetzt wird, wenn er spawnt.
 	// Variabel, da der Startplatz von der Dimension des Blockes abhängig ist.
 	int blockstart_x = 0; 
 	int blockstart_y = 0;
+	
+	// Controller Klasse
+	private Steuerung controll;
 	
 	static void wait(int ms)
 	{
@@ -86,28 +97,7 @@ public class Modell{
 				}
 			}
 		}
-		//System.out.println("Spielfeld fertig erstellt!");
 	}
-	
-	// Macht aus dem Feld playfield ein String den später die GUI bei der ausgabe verwerten kann.
-	// Ergebnis: "|      x      | \n" + "...\n" + ...
-	/*public String playfieldAsString() {
-		String playfieldString = "";
-		for(int i = 0; i < playfield.length; i++){
-			playfieldString = playfieldString + '"';
-			for(int j = 0; j < playfield[0].length;j++) {
-				playfieldString = playfieldString + playfield[i][j];
-			}
-			if((i + 1) == playfield.length) {
-				playfieldString = playfieldString + '"';
-			}
-			else {
-			playfieldString = playfieldString + " \\n" + '"' + " + ";
-			}
-		}
-		return playfieldString;
-	}
-	*/
 	
 	// Zuständig dafür wie das Spielfeld im Fenster gerendert wird.
 	public String playfieldAsString() {
@@ -136,33 +126,22 @@ public class Modell{
 		return playfieldString;
 	}
 	
-	
+	// Debug Funktion, die innerhalb der Konsole das Spielfeld ausgibt.
 	public void printPlayfield() {
 		for(int i = 0; i < this.getPlayfieldRowLenght(); i++){
 			// Nächste Zeile
 			System.out.println(" ");
 			for(int j = 0; j < this.getPlayfieldColumnLenght(); j++){
-				/*if(j == 0 || j == ply_len_y){
-					System.out.print(playfield[i][j]);
-				}
-				else if(i == ply_len_x){
-					System.out.print(playfield[i][j]);
-				}
-				else{
-					System.out.print(playfield[i][j]);
-				}
-				*/
 				System.out.print(this.getPlayfieldAt(i, j));
 			}
 		}
 		System.out.println("Spielfeld mit Buffer gerendert!");
 	}
-	
+	/*
 	public void printPlayfieldWithoutBuffer() {
 		for(int i = 0; i < playfield.length; i++){
 			// Überspring die Bufferzeilen
 			if(i < BUFFER_Y) {
-				//System.out.println("Ich bin im Continue zum "+ (i+1) + ". mal!");
 				continue;
 			}
 			// Nächste Zeile
@@ -181,6 +160,7 @@ public class Modell{
 		}
 		
 	}
+	*/
 	
 	public Spielblock createPlayblock(String playblockName) {
 		Spielblock block = new Spielblock(playblockName);
@@ -242,7 +222,6 @@ public class Modell{
 		int currentBlockDimY = this.currentBlock.getBlockDimY(); //blockField.length;
 		char[][] currentBlockField = this.currentBlock.getBlockField();
 		
-		
 		// Bestimme den Startpunkt anhand der Blockdimension von currentBlock.
 		this.blockstart_x = (PLYFLD_X + PLYFLD_BORDER_X)/2 - 1; // Hälfte der Breite des Feldes
 		this.blockstart_y = (BUFFER_Y - currentBlockDimY); // Länge des Buffers - Länge von currentBlock; da der Buffer dem ersten Teil des ganzen Feldes entspricht, reicht es damit zu rechnen, anstatt mit dem ganzen Feld.
@@ -251,36 +230,6 @@ public class Modell{
 		// Zählt bis 3 hoch, um alle 4 Positionen des Blockes im Feld currentBlock.position festzuhalten.
 		int positionCounter = 0;
 		char blockColor = this.currentBlock.getBlockChar();
-		// Bestimme die Farbe des currentBlocks
-		/*
-		switch(this.currentBlock.getColor()){
-		case "Red":
-			blockColor = 'r';
-			break;
-		case "Blue":
-			blockColor = 'b';
-			break;
-		case "Yellow":
-			blockColor = 'b';
-			break;
-		case "Purple":
-			blockColor = 'p';
-			break;
-		case "Green":
-			blockColor = 'g';
-			break;
-		case "Lightblue":
-			blockColor = 'h';
-			break;
-		default:
-			blockColor = 'c';
-			System.out.println("Fehler beim bestimmen der Farbe eines Blockes im Modell");
-			break;
-	}	
-	*/
-		
-		
-		
 		
 		// Schreibe den Block seiner Form nach in das Spielfeld
 		for(int i = 0; i < currentBlockDimY; i++) {
@@ -317,7 +266,6 @@ public class Modell{
 			this.currentBlock.setPosition(i, 0, newPosition);
 			// Update das Spielfeld mit der aktuellen Position.
 			playfield[this.currentBlock.getPosition(i,0)][this.currentBlock.getPosition(i,1)] = this.currentBlock.getBlockChar();
-	
 		}
 	}
 
@@ -336,7 +284,6 @@ public class Modell{
 			}
 			// Wenn der Nächste Block eine Zahl als Farbkodierung hat, ist dieser ein gesetzter Block und damit ein Hinderniss.
 			else if(contains(Spielblock.SET_BLOCK_CHAR_COLOR, this.playfield[lowestPosition[0]+1][nextPositionY])) {
-			//else if(this.playfield[lowestPosition[0]+1][nextPositionY] == Spielblock.PLAYFIELD_BLOCK_CHAR) {
 				// Nächstes Feld auf das der currentBlock fällt ist ein anderer Block, er kann nicht weiter fallen.
 				obstacleDetected = true;
 			}
@@ -356,8 +303,6 @@ public class Modell{
 			}
 			else if(contains(Spielblock.SET_BLOCK_CHAR_COLOR, this.playfield[lowestPosition[0]+1][nextPositionY]) ||
 					contains(Spielblock.SET_BLOCK_CHAR_COLOR, this.playfield[lowestPosition[0]+1][nextPositionY - 1])) {
-			//else if(this.playfield[lowestPosition[0]+1][nextPositionY] == Spielblock.PLAYFIELD_BLOCK_CHAR ||
-			//		this.playfield[lowestPosition[0]+1][nextPositionY - 1] == Spielblock.PLAYFIELD_BLOCK_CHAR) {
 				// Nächstes Feld auf das der currentBlock fällt ist ein anderer Block, er kann nicht weiter fallen.
 				obstacleDetected = true;
 			}
@@ -385,21 +330,18 @@ public class Modell{
 		}
 		else if(direction == "DOWN") {
 			for(int i = 0; i < newPosition.length; i++) {
-				//System.out.println("this.currentBlock.getPositionAt: "+ this.currentBlock.getPositionAt(i, 0));
 				newPosition[i][0] = this.currentBlock.getPositionAt(i, 0); //Y
 				newPosition[i][0] = (newPosition[i][0]) + 1;
 				newPosition[i][1] = this.currentBlock.getPositionAt(i, 1); //X
 			}			
 		}		
-		System.out.println("calculateNewPosition(): Direction: "+ direction+ ", Alte Position: "+ this.currentBlock + ", Neue Position: "+ newPosition);
-		System.out.println("Alte Positionen: ");
+		//System.out.println("calculateNewPosition(): Direction: "+ direction+ ", Alte Position: "+ this.currentBlock + ", Neue Position: "+ newPosition);
+		//System.out.println("Alte Positionen: ");
 		
 		for(int i = 0; i < newPosition.length; i++) {
 			System.out.println("X-Koordinate: " + this.currentBlock.getPositionAt(i, 1) + " Y-Koordinate: "+ this.currentBlock.getPositionAt(i, 0));
 		}
-		System.out.println(" ");
-		System.out.println("Neue Positionen: ");
-		System.out.println(" ");
+		//System.out.println("Neue Positionen: ");
 		for(int i = 0; i < newPosition.length; i++) {
 			System.out.println("X-Koordinate: " + newPosition[i][1] + "Y-Koordinate: "+ newPosition[i][0]);
 		}
@@ -423,11 +365,11 @@ public class Modell{
 					notObstructed = false;
 				}
 				else if (contains(Spielblock.SET_BLOCK_CHAR_COLOR, this.playfield[currentlyCheckingPosition[0]][currentlyCheckingPosition[1]])) {
-				//else if(this.playfield[currentlyCheckingPosition[0]][currentlyCheckingPosition[1]] == Spielblock.PLAYFIELD_BLOCK_CHAR) {
 					// Block stoßt an bereits gesetzten Block an.
 					notObstructed = false;
 				}
-			}catch (Exception e) {
+			}
+			catch (Exception e) {
             }
 		}
 		return notObstructed;
@@ -438,7 +380,6 @@ public class Modell{
 	// Überträgt die Positionen vom derzeitigen currentBlock in das Spielfeld als .
 	public void insertCurrentBlockAsPlayfieldBlock() {
 		for(int i =0; i < Spielblock.POSITION_LENGHT_Y;i++) {
-			//this.playfield[this.currentBlock.getPosition(i, 0)][this.currentBlock.getPosition(i, 1)] = Spielblock.PLAYFIELD_BLOCK_CHAR;
 			this.setPlayfieldAt(this.currentBlock.getPosition(i, 0), this.currentBlock.getPosition(i, 1), this.currentBlock.setNewColorCharForSetBlock(this.currentBlock.getBlockChar()));
 		}
 	}
@@ -449,7 +390,6 @@ public class Modell{
 		for(int i = 0; i < Modell.BUFFER_Y; i ++) {
 			for(int j = 0; j < Modell.PLYFLD_X; j++){
 				if(contains(Spielblock.SET_BLOCK_CHAR_COLOR, this.playfield[i][j])) {
-				//if(this.playfield[i][j] == Spielblock.PLAYFIELD_BLOCK_CHAR) {
 					gameEnd = true;
 					break;
 				}
@@ -458,7 +398,27 @@ public class Modell{
 		return gameEnd;
 	}
 	
+	public void resetGame() {
+		// Entferne alle Blöcke aus dem Spielfeld.
+		playfield = new char[PLYFLD_Y + BUFFER_Y + PLYFLD_BORDER_Y][PLYFLD_X  + PLYFLD_BORDER_X];
+		createPlayfieldBorder();
+		// Setze den Score auf 0.
+		this.score = 0;
+		//Setze die Geschwindigkeit auf normal zurück.
+		this.setFallTimeUpdated(FALL_TIME_NORMAL);
+		this.setBlockCount(0);
+		// Update die GUI.
+		// Resette die Flag für den Spiellogik-Thread
+		
+		this.controll.logicThreadRun = true;
+		System.out.println("LogicThreadRun =  " + this.controll.logicThreadRun);
+		// TODO: Starte das Spiel neu.
+		this.controll.restartLogicThread();
+		
+	}
+	
 	// Funktion zum Bewegen des currentBlocks nach links und rechts.
+	// TODO: vllt löschen
 	public void moveCurrentBlock(String direction) {
 		int[][] newPosition = new int[4][2];
 		
@@ -492,7 +452,6 @@ public class Modell{
 			for(int i_row = 0; i_row < 4; i_row++) {
 				// Lösche die alten Werte.
 				this.setPlayfieldCharacterAtPosition(this.currentBlock.getPosition(i_row, 0), this.currentBlock.getPosition(i_row, 1), PLYFLD_FREE_CHAR);
-				//playfield[this.currentBlock.getPosition(i_row, 0)][this.currentBlock.getPosition(i_row, 1)] = PLYFLD_FREE_CHAR;
 			}
 			// Ändere die currentPosition vom currentBlock.
 			for(int i_row = 0; i_row < 4; i_row++) {
@@ -514,8 +473,7 @@ public class Modell{
 	
 	// Funktion zum Rotieren des currenBlocks (im Uhrzeigersinn)
 	// Alle Blöcke rotieren sich um ihren zweiten Pixel.
-	
-	//TODO: Rotation für ander Blöcke als Line funktioniert noch nicht.
+	// TODO: vllt löschen.
 	public void rotateCurrentBlock() {
 		if(this.currentBlock.getBlockName() != "square") {
 		final int rotatingPixel = 2;
@@ -623,18 +581,10 @@ public class Modell{
 	
 	
 	//-------------------Neue Rotation
-	// Hook und mirror_2v2 funktionieren noch nicht
 	public void rotateCurrentBlock2() {
 		if(this.currentBlock.getBlockName() != "square") {
 		 int rotatingPixel = 2;
-		 /*if(this.currentBlock.getBlockName() == "hook") {
-				rotatingPixel = 1;
-			}
-		if(this.currentBlock.getBlockName() == "mirror2v2") {
-			rotatingPixel = 3;
-		}
-		*/
-		
+		 
 		int[][] oldPosition = new int[4][2];
 		
 		
@@ -649,23 +599,11 @@ public class Modell{
 		System.out.println("-- Pixel 3: x: "+ oldPosition[2][1] + " y: " + oldPosition[2][0]);
 		System.out.println("-- Pixel 4: x: "+ oldPosition[3][1] + " y: " + oldPosition[3][0]);
 		
-		//int[][] oldPosition = this.currentBlock.getPosition(); // Call by reference!!
 		// Aktualisierte Werte werden erst in newPosition zwischengespeichert und nachdem sie mit checkPosition überprüft wurden,
 		// auf die tatsächliche Positionsvariable und ins Feld geschrieben.
 		int[][] newPosition =  new int[4][2];	
 		newPosition[1][0] = this.currentBlock.getPositionAt(1, 0);
 		newPosition[1][1] = this.currentBlock.getPositionAt(1, 1);
-		/*for(int i = 0; i < oldPosition.length; i++) {
-			newPosition[i][0] = this.currentBlock.getPositionAt(i, 0) ; 
-			newPosition[i][1] = this.currentBlock.getPositionAt(i, 1) ; 
-		}
-		*/
-		//int distanceToRotatingPixelY = 0;
-		//int distanceToRotatingPixelX = 0;
-		
-		// TODO : Bestimme den sich rotierenden Pixel anders. 
-		// Im jetzigen Fall ändert sich der Pixel bei jeder Drehung, was dazu führt, dass der Block sich nicht einmal um die komplette Achse drehen kann, sondern nur zwischen 2 Drehpositionen wechselt.
-		//int rotatingPixelYCord = 
 		
 		int rotatingPixelYCord = newPosition[rotatingPixel-1][0];
 		int rotatingPixelXCord = newPosition[rotatingPixel-1][1];
@@ -673,11 +611,6 @@ public class Modell{
 		System.out.println("-------- Rotations Pixel:");
 		System.out.println("-- Pixel 1: x: "+ rotatingPixelXCord + " y: " + rotatingPixelYCord);
 		
-		
-		
-		
-		//int rotatingPixelYCord = oldPosition[rotatingPixel-1][0];
-		//int rotatingPixelXCord = oldPosition[rotatingPixel-1][1];
 		for(int i = 0; i < 4; i++) {
 			System.out.println("XXXXXXXXXXXXXXXX Counter: " + i);
 			
@@ -699,27 +632,7 @@ public class Modell{
 				
 				int newCordY = 0;
 				int newCordX = 0;
-				/*
-				if(distanceToRotatingPixelY < 0) {
-					newCordX = rotatingPixelXCord - Math.abs(distanceToRotatingPixelY);
-				}
-				else if(distanceToRotatingPixelY == 0) {
-					newCordX = rotatingPixelXCord;
-				}
-				else if (distanceToRotatingPixelY > 0) {
-					newCordX = rotatingPixelXCord + Math.abs(distanceToRotatingPixelY);
-				}
 				
-				if(distanceToRotatingPixelX < 0) {
-					newCordY = rotatingPixelYCord - Math.abs(distanceToRotatingPixelX);
-				}
-				else if(distanceToRotatingPixelX == 0) {
-					newCordY = rotatingPixelYCord;
-				}
-				else if (distanceToRotatingPixelX > 0) {
-					newCordY = rotatingPixelYCord + Math.abs(distanceToRotatingPixelX);
-				}
-				*/
 				System.out.println("+- Berechnung der neuen x und y Koordinaten: ");
 				
 				if(distanceToRotatingPixelY < 0 && distanceToRotatingPixelX < 0) {
@@ -870,18 +783,10 @@ public class Modell{
 				currentBlock.setTurnPlus(!(currentBlock.getTurnPlus())); 
 				// Lösche alte Werte aus dem Spielfeld.
 				for(int i = 0; i < oldPosition.length; i++) {
-					//playfield[this.currentBlock.getPosition(i_row, 0)][this.currentBlock.getPosition(i_row, 1)] = PLYFLD_FREE_CHAR;
-					
 					this.setPlayfieldCharacterAtPosition(oldPosition[i][0], oldPosition[i][1], PLYFLD_FREE_CHAR);
-					//System.out.println("Cleared Field: Y: "+oldPosition[i][0]+", X: "+ oldPosition[i][1]);
-					//this.printPlayfield();
 				}
-				//System.out.println("-----Cleared Field: ");
-				//this.printPlayfield();
 					
 				for(int i = 0; i < newPosition.length; i++) {
-					// Lösche alte Werte aus der Spielkarte.
-					//this.setPlayfieldCharacterAtPosition(oldPosition[i][0], oldPosition[i][1], PLYFLD_FREE_CHAR);
 					// Setze die neuen Were in den currentBlock ein.
 					this.currentBlock.setPosition(i, 0, newPosition[i][0]);
 					this.currentBlock.setPosition(i, 1, newPosition[i][1]);
@@ -891,22 +796,9 @@ public class Modell{
 				System.out.println("Nach Rotation: ");
 				this.printPlayfield();
 			}
-				/*
-				// Lösche alte Werte aus der Spielkarte.
-				this.setPlayfieldCharacterAtPosition(oldPosition[i][0], oldPosition[i][1], PLYFLD_FREE_CHAR);
-				
-				// Setze den neuen Wert in den currentBlock ein.
-				this.currentBlock.setPosition(i, 0, newCordY);
-				this.currentBlock.setPosition(i, 1, newCordX);
-				
-				// Update die Spielkarte.
-				this.setPlayfieldCharacterAtPosition(this.currentBlock.getPositionAt(i, 0), this.currentBlock.getPositionAt(i, 1), Spielblock.BLOCK_CHAR);
-				*/
 		}
 	}
 	
-	
-	//-------------------Ende neue Rotation
 	
 	
 	// Funktion die Überprüft, ob irgendwo auf dem Spielfeld eine Reihe zustandegekommen ist.
@@ -943,7 +835,6 @@ public class Modell{
 					oldPlayfield[i][j] = this.getPlayfieldAt(i, j);
 				}
 			}
-			//char[][] oldPlayfield = this.playfield;
 			Collections.reverse(completedRows);
 			
 			//Wichtige Variable, die die Reihennummer anpasst, wenn mehrere Reihen gleichzeitig gecleared werden.
@@ -962,7 +853,7 @@ public class Modell{
 				this.printPlayfield();
 				this.setScore(this.score + Modell.SCORE_BONUS_CLEARED_ROW);
 				// Setzte alle Werte der darüberliegenden Reihen eins nach unten.
-				//TODO: Hier sitz der Wurm!!
+				//TODO: Überprüfen ob hier noch immer der Wurm sitzt.
 				// i > 3; da die Reihen 0-3 nur zum setzen des Blockes ins Spielfeld gehören.
 				for(int i = 4; i < element+1; i++) {
 					for(int j = 0; j < oldPlayfield[0].length; j++) {					
@@ -976,21 +867,7 @@ public class Modell{
 						oldPlayfield[i][j] = this.getPlayfieldAt(i, j);
 					}
 				}
-				
-				System.out.println("");
 				runs++;
-				
-				
-				
-				
-				
-				/*for(int i = element+1; i < playfield.length; i--) {
-					for(int j = 0; j < playfield[i].length; j++) {
-						playfield[i][j] = oldPlayfield[i-1][j];
-						//playfield[i][j] = Modell.PLYFLD_FREE_CHAR;
-					}
-				}
-				*/
 			}
 			
 		}
@@ -1049,6 +926,14 @@ public class Modell{
 		return Modell.fallTime;
 	}
 	
+	synchronized void setControll(Steuerung controll) {
+		this.controll = controll;
+	}
+	
+	synchronized Steuerung getController() {
+		return this.controll;
+	}
+	
 	static synchronized void setFallTime(int newFallTime) {
 		Modell.fallTime = newFallTime;
 	}
@@ -1062,6 +947,23 @@ public class Modell{
 		this.playfield[row][column] = newCharacter;
 	}
 	
+	public synchronized int getBlockCount() {
+		return this.blockCount;
+	}
+	
+	public synchronized void setBlockCount(int blockCount) {
+		this.blockCount = blockCount;
+	}
+	
+	public synchronized void setFallTimeUpdated(int fallTime) {
+		this.fallTimeUpdated = fallTime;
+	}
+	
+	public synchronized int getFallTimeUpdated() {
+		return this.fallTimeUpdated;
+	}
+	
+	
 	public boolean contains(char[] array, char findChar) {
 		boolean contains = false;
 		for(int i = 0; i < array.length; i++) {
@@ -1072,56 +974,6 @@ public class Modell{
 		}
 		return contains;
 	}
-
-	
-	
-	
 	// Getter und Setter Methoden Ende
 	
-/*
-	public void playLoop() {
-		// Setup für das Spiel. Baue als erstes das Spielfeld auf.
-		createPlayfieldBorder();
-		
-		printPlayfield();
-		
-		// String plyfld = playfieldAsString(); 
-		
-		// Ansicht.createAndShowGUI(plyfld);
-		
-		boolean run = true;
-		while(run) {
-			// Spielblock erschaffen.
-			this.currentBlock = createRandomBlock();
-			// Spielblock in Bufferzone von Spielfeld legen.
-			putBlockInBufferzone();
-			// Drucke Spielfeld mit Bufferzone.
-			printPlayfield();
-			System.out.println(playfieldAsString2());
-			// Überprüfe ob der Spielblock fallen kann, wenn ja lass ihn fallen
-			this.moveCurrentBlock("right");
-			while(this.checkForObstacle() == false) {
-				currentBlockFall();
-				printPlayfield();
-				wait(1000);	// Warte eine Sekunde bevor der Block weiter fällt, falls möglich.
-			}
-			//Übertrage den currentBlock aufs Spielfeld
-			insertCurrentBlockAsPlayfieldBlock();
-			// TODO: Checken, ob eine Pfeiltaste gedrückt wurde.
-			
-			// TODO: Checken, ob eine vollständige Reihe zustandegekommen ist.
-			// TODO: Checken, ob in den Buffer reingesetzt worden ist, dann wird das Spiel beendet.
-			if (checkGameEnd() == true) {
-				System.out.println("Spiel vorbei!!");
-				run = false;
-			}
-			else {
-				wait(2000); // Warte zwei Sekunden bevor der nächste Block fällt.
-			}
-		}
-		
-		// Wenn Spielblock anderen Spielblock erreicht wird er zu Teil von Spielfeld
-		
-	}
-	*/
 }

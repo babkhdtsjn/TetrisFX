@@ -9,13 +9,10 @@ public class Bildrenderer {
 
 /* Das Spielfeld ist (mit Rand) 12 breit und (mit Boden und Bufferer) 25 hoch.
  * Um das Spielfeld zu erstellen wird ein 12x25 Raster gebraucht das dynamisch befüllt wird.
- * 
- * 
- * 
  */
 	static final int ROWS = Modell.PLYFLD_Y + Modell.PLYFLD_BORDER_Y + Modell.BUFFER_Y;
 	static final int COLUMNS = Modell.PLYFLD_X + Modell.PLYFLD_BORDER_X;
-	//Image[][] img;
+	
 	ImageView[][] ivPlayfield;
 	ImageView[][] ivNextBlock;
 	
@@ -34,7 +31,6 @@ public class Bildrenderer {
 	static final String LIGHTBLUE_BLOCK_PATH = "file:data/HellblauerBlockV3.png";
 	
 	static final String ERROR_BLOCK_PATH = "file:data/Test.png";
-	
 	
 	// Größe für das Feld in dem der nächste Block abgebildet werden soll.
 	static final int NEXT_BLOCK_X = 2;
@@ -61,9 +57,6 @@ public class Bildrenderer {
 	private Text scoreDescriptionText = new Text();
 	private Text scoreText = new Text();
 	
-	
-	
-	
 	GridPane root;
 	
 	public Bildrenderer(GridPane root) {
@@ -75,34 +68,25 @@ public class Bildrenderer {
 		this.root = root;
 		for(int column = 0; column < COLUMNS; column++) {
 			for(int row = 0; row < ROWS; row++) {
-			//empty grid element
-			//root.add(null, row, column);
 			if(row == ROWS-1 && column == 0) {		//linke Ecken
-				//img[column][row] = imgLeftCorner;
 				ivPlayfield[column][row] = new ImageView(imgLeftCorner);
 			}
 			else if(row == ROWS-1 && column == COLUMNS-1) {	//rechte Ecke
-				//img[column][row] = imgRightCorner;
 				ivPlayfield[column][row] = new ImageView(imgRightCorner);
 			}
 			else if((row != ROWS-1 && row != 0) && (column == 0)) { //linker Rand
-				//img[column][row] = imgBorder;
 				ivPlayfield[column][row] = new ImageView(imgLeftBorder);
 			}
 			else if((row != ROWS-1 && row != 0) && (column == COLUMNS-1)) { //rechter Rand
-				//img[column][row] = imgBorder;
 				ivPlayfield[column][row] = new ImageView(imgRightBorder);
 			}
 			else if(row == ROWS-1 && (column != 0 || column != COLUMNS-1)) { // Boden
-				//img[column][row] = imgBottom;
 				ivPlayfield[column][row] = new ImageView(imgBottom);
 			}
 			else {	//Leeres Feld
-				//img[column][row] = imgEmpty;
 				ivPlayfield[column][row] = new ImageView(imgEmpty);
 			}
 			// Füge das Bild in den passenden ImageView ein.
-			//iv[column][row] = new ImageView(getImageAt(column, row));
 			root.add(ivPlayfield[column][row], column, row);
 			}
 		}
@@ -110,7 +94,6 @@ public class Bildrenderer {
 		this.nextBlockText.setStyle("-fx-font: normal bold 22px 'Courier' ");
 		this.nextBlockText.setText("Nächster Block: ");
 		// Put on cell (0,0), span 2 column, 1 row.
-	    //  root.add(labelTitle, 0, 0, 2, 1);
 		root.add(nextBlockText, COLUMNS, 0, 2,1);
 		
 		
@@ -177,14 +160,11 @@ public class Bildrenderer {
 	
 	public synchronized void updateNextBlockView(Spielblock nextBlock) {
 		// Mach als erstes das NextBlock Imageviewer Feld leer.
-		// ivNextBlock
-		
 		for(int column = 0; column < ivNextBlock.length; column++) {
 			for(int row = 0; row < ivNextBlock[column].length; row++) {
 				this.ivNextBlock[column][row].setImage(imgEmpty);
 			}
 		}
-		
 		
 		Image nextBlockImage;
 		switch (nextBlock.getColor()) {
@@ -227,12 +207,5 @@ public class Bildrenderer {
 	
 	public Text getScoreText() {
 		return this.scoreText;
-	}
-	/*
-	public synchronized Image getImageAt(int column, int row) {
-		return this.img[column][row];
-	}
-	*/
-	
-	
+	}	
 }
