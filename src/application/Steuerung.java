@@ -59,17 +59,14 @@ public class Steuerung {
 				while(logicThreadRun) {
 						playLoop();
 				}
-				System.out.println("Ende LogikThread!");
 			}	
 		};
 		inputThread = new Thread() {
 			public void run() {
 				while(inputThreadRun) {
 				// Überprüfe ob eine Pfeiltaste gedrückt wurde.
-				//Platform.runLater(() -> {
 				if(Ansicht.getLeftDirection() == true) {
 					model.moveCurrentBlock("LEFT");
-					
 				}
 				else if(Ansicht.getRightDirection() == true) {
 					model.moveCurrentBlock("RIGHT");
@@ -79,7 +76,7 @@ public class Steuerung {
 					// Die Variable wird auf false zurückgesetzt wenn die Taste losgelassen wird.
 					if(Ansicht.getTurned() == false) {
 						Ansicht.setTurned(true);
-						model.rotateCurrentBlock2();
+						model.rotateCurrentBlock();
 						Modell.wait(WAIT_ROTATE_TIME);
 					}
 				}
@@ -107,19 +104,16 @@ public class Steuerung {
 		try {
 			guiThread.join();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		try {
 			logicThread.join();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		try {
 			inputThread.join();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -128,19 +122,16 @@ public class Steuerung {
 		try {
 			guiThread.join();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		try {
 			logicThread.join();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		try {
 			inputThread.join();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -162,67 +153,61 @@ public class Steuerung {
 	}
 	
 	public void playLoop() {
-		//boolean run = true;
-		//while(run) {
-			// Spielblock erschaffen.
-			if(model.getNextBlock() == null) {
-				model.setCurrentBlock(model.createRandomBlock());
-				model.setNextBlock(model.createRandomBlock());
-				Steuerung.setNextBlockMap(model.getNextBlock().printBlockAsString());
-			}
-			else {
-				model.setCurrentBlock(model.getNextBlock());
-				model.setNextBlock(model.createRandomBlock());
-				Steuerung.setNextBlockMap(model.getNextBlock().printBlockAsString());
-				
-			}
+		// Spielblock erschaffen.
+		if(model.getNextBlock() == null) {
+			model.setCurrentBlock(model.createRandomBlock());
+			model.setNextBlock(model.createRandomBlock());
+			Steuerung.setNextBlockMap(model.getNextBlock().printBlockAsString());
+		}
+		else {
+			model.setCurrentBlock(model.getNextBlock());
+			model.setNextBlock(model.createRandomBlock());
+			Steuerung.setNextBlockMap(model.getNextBlock().printBlockAsString());
 			
-			// Spielblock in Bufferzone von Spielfeld legen.
-			model.putBlockInBufferzone();
-			// Drucke Spielfeld mit Bufferzone.
+		}
+		
+		// Spielblock in Bufferzone von Spielfeld legen.
+		model.putBlockInBufferzone();
+		// Drucke Spielfeld mit Bufferzone.
+		model.printPlayfield();
+		
+		map = model.playfieldAsString();
+		// Überprüfe ob der Spielblock fallen kann, wenn ja lass ihn fallen
+		
+		while(model.checkNewPosition(model.calculateNewPosition("DOWN")) == true) {
+			model.moveCurrentBlock("DOWN");
+			model.printPlayfield();
+			map = model.playfieldAsString();
+			Modell.wait(Modell.getFallTime());	// Warte eine Sekunde bevor der Block weiter fällt, falls möglich.
+		}
+		
+		//Übertrage den currentBlock aufs Spielfeld
+		model.insertCurrentBlockAsPlayfieldBlock();
+		map = model.playfieldAsString();
+		model.printPlayfield();
+		
+		List<Integer> completedRows = model.checkRow();
+		if(completedRows.isEmpty() == false) {
+			model.clearRows(completedRows);
 			model.printPlayfield();
 			
-			map = model.playfieldAsString();
-			// Überprüfe ob der Spielblock fallen kann, wenn ja lass ihn fallen
-			
-			
-			while(model.checkNewPosition(model.calculateNewPosition("DOWN")) == true) {
-				model.moveCurrentBlock("DOWN");
-				model.printPlayfield();
-				map = model.playfieldAsString();
-				Modell.wait(Modell.getFallTime());	// Warte eine Sekunde bevor der Block weiter fällt, falls möglich.
+		}
+		// Überprüfe, ob über das Spielfeld nach oben hinaus gestapelt wurde (-> Game Over).
+		if (model.checkGameEnd() == true) {
+			System.out.println("Spiel vorbei!!");
+			logicThreadRun = false;
+			gui.gameOverPopUp();
+		}
+		else {
+			model.setBlockCount(model.getBlockCount() + 1);
+			if(model.getBlockCount() == Modell.SPEED_UP_BLOCK_COUNT_THRESHHOLD &&
+					(model.getFallTimeUpdated() - Modell.FALL_TIME_REDUCTION) >= Modell.FALL_TIME_MIN) {
+				model.setFallTimeUpdated(model.getFallTimeUpdated() - Modell.FALL_TIME_REDUCTION);
+				Modell.setFallTime(model.getFallTimeUpdated());
+				model.setBlockCount(0);
 			}
-			
-			//Übertrage den currentBlock aufs Spielfeld
-			model.insertCurrentBlockAsPlayfieldBlock();
-			map = model.playfieldAsString();
-			model.printPlayfield();
-			
-			List<Integer> completedRows = model.checkRow();
-			if(completedRows.isEmpty() == false) {
-				model.clearRows(completedRows);
-				model.printPlayfield();
-				
-			}
-			// Überprüfe, ob über das Spielfeld nach oben hinaus gestapelt wurde (-> Game Over).
-			if (model.checkGameEnd() == true) {
-				System.out.println("Spiel vorbei!!");
-				logicThreadRun = false;
-				System.out.println("LogicThreadRun =  " + logicThreadRun);
-				// TODO: Informiere den Spieler über das beendete Spiel und entziehe ihm die Kontrolle über den Block.
-				gui.gameOverPopUp();
-			}
-			else {
-				model.setBlockCount(model.getBlockCount() + 1);
-				if(model.getBlockCount() == Modell.SPEED_UP_BLOCK_COUNT_THRESHHOLD &&
-						(model.getFallTimeUpdated() - Modell.FALL_TIME_REDUCTION) >= Modell.FALL_TIME_MIN) {
-					model.setFallTimeUpdated(model.getFallTimeUpdated() - Modell.FALL_TIME_REDUCTION);
-					Modell.setFallTime(model.getFallTimeUpdated());
-					model.setBlockCount(0);
-				}
-				Modell.wait(2000); // Warte zwei Sekunden bevor der nächste Block fällt.
-			}
-		//}
+			Modell.wait(2000); // Warte zwei Sekunden bevor der nächste Block fällt.
+		}
 	}
 	static synchronized String getMap() {
 		return Steuerung.map;

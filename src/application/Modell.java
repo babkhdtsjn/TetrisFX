@@ -293,7 +293,6 @@ public class Modell{
 		}
 		// Wenn currentBlock == square ist, wird eine breitere Detektion gebraucht.
 		// Die lowestPosition ist beim square Block der rechte untere Pixel.
-		// TODO: fix für alle Blöcke die 2 Breit sind::!!
 		else if(this.currentBlock.getBlockName() != "line") {
 			if(this.playfield[lowestPosition[0]+1][nextPositionY] == PLYFLD_BOTTOM_BORDER_CHAR ||
 					this.playfield[lowestPosition[0]+1][nextPositionY - 1] == PLYFLD_BOTTOM_BORDER_CHAR
@@ -348,8 +347,7 @@ public class Modell{
 		return newPosition;
 	}
 	
-	//Überprüft die new Position die 4 Zeilen und 2 Spalten hat.
-	//Bevor eine vom Spieler angeforderte Bewegung ausgeführt wird.
+	//Überprüft die newPosition die 4 Zeilen und 2 Spalten hat, bevor eine vom Spieler angeforderte Bewegung ausgeführt wird.
 	public boolean checkNewPosition(int [][] newPosition) {
 		boolean notObstructed = true;
 		
@@ -370,6 +368,7 @@ public class Modell{
 				}
 			}
 			catch (Exception e) {
+				System.out.println("Fehler in checkNewPosiition!");
             }
 		}
 		return notObstructed;
@@ -418,7 +417,6 @@ public class Modell{
 	}
 	
 	// Funktion zum Bewegen des currentBlocks nach links und rechts.
-	// TODO: vllt löschen
 	public void moveCurrentBlock(String direction) {
 		int[][] newPosition = new int[4][2];
 		
@@ -473,115 +471,7 @@ public class Modell{
 	
 	// Funktion zum Rotieren des currenBlocks (im Uhrzeigersinn)
 	// Alle Blöcke rotieren sich um ihren zweiten Pixel.
-	// TODO: vllt löschen.
 	public void rotateCurrentBlock() {
-		if(this.currentBlock.getBlockName() != "square") {
-		final int rotatingPixel = 2;
-		
-		int[][] oldPosition = new int[4][2];
-		for(int i = 0; i < oldPosition.length; i++) {
-			oldPosition[i][0] = this.currentBlock.getPositionAt(i, 0) ; 
-			oldPosition[i][1] = this.currentBlock.getPositionAt(i, 1) ; 
-		}
-		//int[][] oldPosition = this.currentBlock.getPosition(); // Call by reference!!
-		// Aktualisierte Werte werden erst in newPosition zwischengespeichert und nachdem sie mit checkPosition überprüft wurden,
-		// auf die tatsächliche Positionsvariable und ins Feld geschrieben.
-		int[][] newPosition =  new int[4][2];	
-		newPosition[1][0] = this.currentBlock.getPositionAt(1, 0);
-		newPosition[1][1] = this.currentBlock.getPositionAt(1, 1);
-		/*for(int i = 0; i < oldPosition.length; i++) {
-			newPosition[i][0] = this.currentBlock.getPositionAt(i, 0) ; 
-			newPosition[i][1] = this.currentBlock.getPositionAt(i, 1) ; 
-		}
-		*/
-		//int distanceToRotatingPixelY = 0;
-		//int distanceToRotatingPixelX = 0;
-		
-		// TODO : Bestimme den sich rotierenden Pixel anders. 
-		// Im jetzigen Fall ändert sich der Pixel bei jeder Drehung, was dazu führt, dass der Block sich nicht einmal um die komplette Achse drehen kann, sondern nur zwischen 2 Drehpositionen wechselt.
-		//int rotatingPixelYCord = 
-		
-		int rotatingPixelYCord = newPosition[rotatingPixel-1][0];
-		int rotatingPixelXCord = newPosition[rotatingPixel-1][1];
-		
-		
-		//int rotatingPixelYCord = oldPosition[rotatingPixel-1][0];
-		//int rotatingPixelXCord = oldPosition[rotatingPixel-1][1];
-		for(int i = 0; i < oldPosition.length; i++) {
-			if(i != (rotatingPixel-1)) {
-				int yCord = oldPosition[i][0];
-				int xCord = oldPosition[i][1];
-				// Rechne den Unterschied zwischen dem iterierendem Pixel und dem Vergleichspixel.
-				int distanceToRotatingPixelY = yCord - rotatingPixelYCord;
-				int distanceToRotatingPixelX = xCord - rotatingPixelXCord;
-				// Spiegele die Koordinaten des iterierendem Pixels am Vergleichspixel.
-				//int newCordY = rotatingPixelYCord - distanceToRotatingPixelY;
-				//int newCordX = rotatingPixelXCord - distanceToRotatingPixelX;
-				
-				int newCordY = 0;
-				int newCordX = 0;
-				if(currentBlock.getTurnPlus() == false) {
-					newCordY = rotatingPixelYCord - distanceToRotatingPixelX;
-					newCordX = rotatingPixelXCord - distanceToRotatingPixelY;
-				}
-				else {
-					newCordY = rotatingPixelYCord + distanceToRotatingPixelX;
-					newCordX = rotatingPixelXCord + distanceToRotatingPixelY;
-					
-				}
-				newPosition[i][0] = newCordY;
-				newPosition[i][1] = newCordX;
-				}
-			//System.out.println("-----Pixelposition: "+ i + ", Alte X-Koordinate: "+ oldPosition[i][1]+ ", alte Y-Koordinate: "+ oldPosition[i][0]);
-			//System.out.println("+++++Pixelposition: "+ i + ", Neue X-Koordinate: "+ newPosition[i][1]+ ", neue Y-Koordinate: "+ newPosition[i][0]);
-			
-			}
-				
-			// Prüfe ob platz für Rotation ist oder ob nicht gedreht werden kann.
-			// TODO: Prüfung
-			if(this.checkNewPosition(newPosition) == true) {
-				currentBlock.setTurnPlus(!(currentBlock.getTurnPlus())); 
-				// Lösche alte Werte aus dem Spielfeld.
-				for(int i = 0; i < oldPosition.length; i++) {
-					//playfield[this.currentBlock.getPosition(i_row, 0)][this.currentBlock.getPosition(i_row, 1)] = PLYFLD_FREE_CHAR;
-					
-					this.setPlayfieldCharacterAtPosition(oldPosition[i][0], oldPosition[i][1], PLYFLD_FREE_CHAR);
-					//System.out.println("Cleared Field: Y: "+oldPosition[i][0]+", X: "+ oldPosition[i][1]);
-					//this.printPlayfield();
-				}
-				//System.out.println("-----Cleared Field: ");
-				//this.printPlayfield();
-					
-				for(int i = 0; i < newPosition.length; i++) {
-					// Lösche alte Werte aus der Spielkarte.
-					//this.setPlayfieldCharacterAtPosition(oldPosition[i][0], oldPosition[i][1], PLYFLD_FREE_CHAR);
-					// Setze die neuen Were in den currentBlock ein.
-					this.currentBlock.setPosition(i, 0, newPosition[i][0]);
-					this.currentBlock.setPosition(i, 1, newPosition[i][1]);
-					//Setze die neuen Werte in das Spielfeld ein.
-					this.setPlayfieldCharacterAtPosition(newPosition[i][0], newPosition[i][1], this.currentBlock.getBlockChar());
-				}
-				System.out.println("Nach Rotation: ");
-				this.printPlayfield();
-			}
-				/*
-				// Lösche alte Werte aus der Spielkarte.
-				this.setPlayfieldCharacterAtPosition(oldPosition[i][0], oldPosition[i][1], PLYFLD_FREE_CHAR);
-				
-				// Setze den neuen Wert in den currentBlock ein.
-				this.currentBlock.setPosition(i, 0, newCordY);
-				this.currentBlock.setPosition(i, 1, newCordX);
-				
-				// Update die Spielkarte.
-				this.setPlayfieldCharacterAtPosition(this.currentBlock.getPositionAt(i, 0), this.currentBlock.getPositionAt(i, 1), Spielblock.BLOCK_CHAR);
-				*/
-		}
-	}
-	
-	
-	
-	//-------------------Neue Rotation
-	public void rotateCurrentBlock2() {
 		if(this.currentBlock.getBlockName() != "square") {
 		 int rotatingPixel = 2;
 		 
